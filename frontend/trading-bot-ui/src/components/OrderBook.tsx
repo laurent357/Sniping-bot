@@ -11,9 +11,8 @@ import {
   TableRow,
   Paper,
   Box,
-  Divider,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../hooks/redux';
 import { updateOrderBook } from '../store/slices/tradingSlice';
@@ -38,7 +37,7 @@ export const OrderBook: React.FC<OrderBookProps> = React.memo(({ tokenPair, dept
   const { bids, asks } = useMemo(() => {
     return {
       bids: orderBook.bids.slice(0, depth),
-      asks: orderBook.asks.slice(0, depth).reverse()
+      asks: orderBook.asks.slice(0, depth).reverse(),
     };
   }, [orderBook.bids, orderBook.asks, depth]);
 
@@ -47,7 +46,7 @@ export const OrderBook: React.FC<OrderBookProps> = React.memo(({ tokenPair, dept
     count: bids.length + asks.length,
     getScrollElement: () => containerRef,
     estimateSize: () => VIRTUAL_SCROLL_CONFIG.itemHeight,
-    overscan: VIRTUAL_SCROLL_CONFIG.overscan
+    overscan: VIRTUAL_SCROLL_CONFIG.overscan,
   });
 
   // Optimisation de la mise à jour de l'orderbook avec throttling
@@ -61,7 +60,7 @@ export const OrderBook: React.FC<OrderBookProps> = React.memo(({ tokenPair, dept
   useEffect(() => {
     const ws = new WebSocket(`${process.env.REACT_APP_WS_URL}/orderbook/${tokenPair}`);
 
-    ws.onmessage = (event) => {
+    ws.onmessage = event => {
       const data = JSON.parse(event.data);
       handleOrderBookUpdate(data);
     };
@@ -73,41 +72,47 @@ export const OrderBook: React.FC<OrderBookProps> = React.memo(({ tokenPair, dept
   }, [tokenPair, handleOrderBookUpdate]);
 
   // Memoize des styles pour éviter les recalculs
-  const styles = useMemo(() => ({
-    askColor: alpha(theme.palette.error.main, 0.1),
-    bidColor: alpha(theme.palette.success.main, 0.1),
-    tableCell: {
-      padding: '4px 8px',
-      borderBottom: `1px solid ${theme.palette.divider}`,
-      fontSize: '0.875rem'
-    }
-  }), [theme]);
+  const styles = useMemo(
+    () => ({
+      askColor: alpha(theme.palette.error.main, 0.1),
+      bidColor: alpha(theme.palette.success.main, 0.1),
+      tableCell: {
+        padding: '4px 8px',
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        fontSize: '0.875rem',
+      },
+    }),
+    [theme]
+  );
 
   // Rendu optimisé d'une ligne de l'orderbook
-  const renderOrderRow = useCallback((entry: OrderBookEntry, type: 'ask' | 'bid') => {
-    const backgroundColor = type === 'ask' ? styles.askColor : styles.bidColor;
-    const textColor = type === 'ask' ? theme.palette.error.main : theme.palette.success.main;
+  const renderOrderRow = useCallback(
+    (entry: OrderBookEntry, type: 'ask' | 'bid') => {
+      const backgroundColor = type === 'ask' ? styles.askColor : styles.bidColor;
+      const textColor = type === 'ask' ? theme.palette.error.main : theme.palette.success.main;
 
-    return (
-      <TableRow
-        key={`${type}-${entry.price}`}
-        sx={{ backgroundColor }}
-        data-testid={`${type}-row`}
-      >
-        <TableCell sx={styles.tableCell}>
-          <Typography variant="body2" sx={{ color: textColor }}>
-            {formatNumber(entry.price, 6)}
-          </Typography>
-        </TableCell>
-        <TableCell sx={styles.tableCell} align="right">
-          {formatNumber(entry.size, 4)}
-        </TableCell>
-        <TableCell sx={styles.tableCell} align="right">
-          {formatNumber(entry.price * entry.size, 2)}
-        </TableCell>
-      </TableRow>
-    );
-  }, [styles, theme]);
+      return (
+        <TableRow
+          key={`${type}-${entry.price}`}
+          sx={{ backgroundColor }}
+          data-testid={`${type}-row`}
+        >
+          <TableCell sx={styles.tableCell}>
+            <Typography variant="body2" sx={{ color: textColor }}>
+              {formatNumber(entry.price, 6)}
+            </Typography>
+          </TableCell>
+          <TableCell sx={styles.tableCell} align="right">
+            {formatNumber(entry.size, 4)}
+          </TableCell>
+          <TableCell sx={styles.tableCell} align="right">
+            {formatNumber(entry.price * entry.size, 2)}
+          </TableCell>
+        </TableRow>
+      );
+    },
+    [styles, theme]
+  );
 
   return (
     <Card>
@@ -121,8 +126,12 @@ export const OrderBook: React.FC<OrderBookProps> = React.memo(({ tokenPair, dept
               <TableHead>
                 <TableRow>
                   <TableCell sx={styles.tableCell}>Prix</TableCell>
-                  <TableCell sx={styles.tableCell} align="right">Quantité</TableCell>
-                  <TableCell sx={styles.tableCell} align="right">Total</TableCell>
+                  <TableCell sx={styles.tableCell} align="right">
+                    Quantité
+                  </TableCell>
+                  <TableCell sx={styles.tableCell} align="right">
+                    Total
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -147,4 +156,4 @@ export const OrderBook: React.FC<OrderBookProps> = React.memo(({ tokenPair, dept
   );
 });
 
-OrderBook.displayName = 'OrderBook'; 
+OrderBook.displayName = 'OrderBook';

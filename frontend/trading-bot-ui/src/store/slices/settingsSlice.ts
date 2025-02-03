@@ -45,4 +45,4 @@ const settingsSlice = createSlice({
 });
 
 export const { updateSettings, setLoading, setError } = settingsSlice.actions;
-export default settingsSlice.reducer; 
+export default settingsSlice.reducer;

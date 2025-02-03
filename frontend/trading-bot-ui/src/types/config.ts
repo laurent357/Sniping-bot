@@ -28,4 +28,4 @@ export interface BotConfig {
   enabled: boolean;
 }
 
-export type ConfigSection = 'filters' | 'tradingLimits' | 'security'; 
+export type ConfigSection = 'filters' | 'tradingLimits' | 'security';

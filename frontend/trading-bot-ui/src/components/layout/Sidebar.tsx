@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import {
   Drawer,
   List,
@@ -7,7 +7,7 @@ import {
   ListItemText,
   ListItemButton,
   Toolbar,
-  Divider,
+  Box,
   useTheme,
 } from '@mui/material';
 import {
@@ -20,6 +20,11 @@ import {
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
 const DRAWER_WIDTH = 240;
 
 const menuItems = [
@@ -31,14 +36,12 @@ const menuItems = [
   { text: 'Paramètres', icon: <SettingsIcon />, path: '/settings' },
 ];
 
-export const Sidebar = () => {
-  const theme = useTheme();
-  const navigate = useNavigate();
+export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
-  const [selectedPath, setSelectedPath] = useState(location.pathname);
+  const navigate = useNavigate();
+  const selectedPath = location.pathname;
 
   const handleNavigation = (path: string) => {
-    setSelectedPath(path);
     navigate(path);
   };
 
@@ -73,7 +76,9 @@ export const Sidebar = () => {
                 mr: 2,
               }}
             >
-              <ListItemIcon sx={{ color: selectedPath === item.path ? 'primary.light' : 'inherit' }}>
+              <ListItemIcon
+                sx={{ color: selectedPath === item.path ? 'primary.light' : 'inherit' }}
+              >
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} />
@@ -83,4 +88,4 @@ export const Sidebar = () => {
       </List>
     </Drawer>
   );
-}; 
+};

@@ -47,11 +47,7 @@ export const PerformanceChart = ({ data, title }: PerformanceChartProps) => {
               tick={{ fontSize: 12 }}
               interval="preserveStartEnd"
             />
-            <YAxis
-              tickFormatter={formatCurrency}
-              tick={{ fontSize: 12 }}
-              width={80}
-            />
+            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 12 }} width={80} />
             <Tooltip
               formatter={(value: number) => [formatCurrency(value), 'Valeur']}
               labelFormatter={formatDate}
@@ -68,4 +64,4 @@ export const PerformanceChart = ({ data, title }: PerformanceChartProps) => {
       </Box>
     </Paper>
   );
-}; 
+};

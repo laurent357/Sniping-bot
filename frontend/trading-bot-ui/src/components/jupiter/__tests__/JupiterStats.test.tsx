@@ -1,6 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { JupiterStats } from '../JupiterStats';
 import { webSocketService } from '../../../services/websocket';
+import { rest } from 'msw';
+import { server } from '../../../mocks/server';
 
 // Mock du service WebSocket
 jest.mock('../../../services/websocket', () => ({
@@ -16,9 +18,9 @@ describe('JupiterStats', () => {
     jest.clearAllMocks();
   });
 
-  it('affiche le titre et l\'indicateur de connexion', () => {
+  it("affiche le titre et l'indicateur de connexion", () => {
     render(<JupiterStats />);
-    
+
     expect(screen.getByText('Statistiques Jupiter')).toBeInTheDocument();
     expect(screen.getByText('Déconnecté')).toBeInTheDocument();
   });
@@ -42,21 +44,20 @@ describe('JupiterStats', () => {
     render(<JupiterStats />);
 
     expect(webSocketService.connect).toHaveBeenCalled();
-    expect(webSocketService.subscribe).toHaveBeenCalledWith(
-      'stats_update',
-      expect.any(Function)
-    );
+    expect(webSocketService.subscribe).toHaveBeenCalledWith('stats_update', expect.any(Function));
     expect(webSocketService.onConnectionChange).toHaveBeenCalled();
   });
 
-  it('affiche une erreur en cas d\'échec du chargement', async () => {
+  it("affiche une erreur en cas d'échec du chargement", async () => {
     // Mock d'une erreur de fetch
     const mockFetch = jest.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('Erreur API'));
-    
+
     render(<JupiterStats />);
 
     await waitFor(() => {
-      expect(screen.getByText('Erreur lors de la récupération des statistiques')).toBeInTheDocument();
+      expect(
+        screen.getByText('Erreur lors de la récupération des statistiques')
+      ).toBeInTheDocument();
     });
 
     mockFetch.mockRestore();
@@ -68,7 +69,7 @@ describe('JupiterStats', () => {
     await waitFor(() => {
       // Vérifier le formatage des devises
       expect(screen.getByText('1 500 000,00 $')).toBeInTheDocument(); // totalVolume24h
-      
+
       // Vérifier le formatage des pourcentages
       expect(screen.getByText('0,15 %')).toBeInTheDocument(); // averageSlippage24h
     });
@@ -84,4 +85,46 @@ describe('JupiterStats', () => {
       expect(screen.getByText('25,50 %')).toBeInTheDocument(); // apy
     });
   });
-}); 
+
+  it('displays loading state initially', async () => {
+    render(<JupiterStats />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Loading Jupiter Stats/i)).toBeInTheDocument();
+    });
+  });
+
+  it('displays error state when API call fails', async () => {
+    server.use(
+      rest.get('/api/jupiter/stats', (req, res, ctx) => {
+        return res(ctx.status(500));
+      })
+    );
+
+    render(<JupiterStats />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Error loading Jupiter stats/i)).toBeInTheDocument();
+    });
+  });
+
+  it('displays stats data when API call succeeds', async () => {
+    render(<JupiterStats />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Total Volume/i)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/\$1,234,567/i)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Total Trades/i)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/12,345/i)).toBeInTheDocument();
+    });
+  });
+});

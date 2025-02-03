@@ -35,4 +35,4 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 
 // Nettoyer après tous les tests
-afterAll(() => server.close()); 
+afterAll(() => server.close());

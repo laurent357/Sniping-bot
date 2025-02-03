@@ -20,7 +20,7 @@ export const useDataCache = <T>(
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  
+
   const cacheRef = useRef<Map<string, CacheEntry<T>>>(new Map());
   const memoryUsageRef = useRef(0);
 
@@ -36,7 +36,7 @@ export const useDataCache = <T>(
   const cleanupCache = useCallback(() => {
     const now = Date.now();
     let totalSize = 0;
-    
+
     // Supprime les entrées expirées et calcule la taille totale
     for (const [cacheKey, entry] of cacheRef.current.entries()) {
       if (now - entry.timestamp > CACHE_CONFIG.maxAge) {
@@ -48,9 +48,10 @@ export const useDataCache = <T>(
 
     // Si la taille totale dépasse le seuil, supprime les entrées les plus anciennes
     if (totalSize > MEMORY_CONFIG.cleanupThresholds.memory) {
-      const entries = Array.from(cacheRef.current.entries())
-        .sort((a, b) => a[1].timestamp - b[1].timestamp);
-      
+      const entries = Array.from(cacheRef.current.entries()).sort(
+        (a, b) => a[1].timestamp - b[1].timestamp
+      );
+
       while (totalSize > MEMORY_CONFIG.cleanupThresholds.memory && entries.length > 0) {
         const [oldestKey, oldestEntry] = entries.shift()!;
         totalSize -= oldestEntry.size;
@@ -66,7 +67,7 @@ export const useDataCache = <T>(
     const now = Date.now();
 
     // Si les données sont en cache et pas expirées
-    if (cachedEntry && (now - cachedEntry.timestamp) < (options.maxAge || CACHE_CONFIG.maxAge)) {
+    if (cachedEntry && now - cachedEntry.timestamp < (options.maxAge || CACHE_CONFIG.maxAge)) {
       return cachedEntry.data;
     }
 
@@ -78,11 +79,11 @@ export const useDataCache = <T>(
         cacheRef.current.set(key, {
           data: newData,
           timestamp: Date.now(),
-          size
+          size,
         });
         setData(newData);
       });
-      
+
       // Retourner les données périmées
       return cachedEntry.data;
     }
@@ -106,13 +107,13 @@ export const useDataCache = <T>(
 
       // Charger les nouvelles données
       const newData = await fetchData();
-      
+
       // Mettre en cache
       const size = calculateSize(newData);
       cacheRef.current.set(key, {
         data: newData,
         timestamp: Date.now(),
-        size
+        size,
       });
 
       setData(newData);
@@ -143,10 +144,13 @@ export const useDataCache = <T>(
       cacheRef.current.delete(key);
       loadData();
     }, [key, loadData]),
-    getCacheInfo: useCallback(() => ({
-      size: cacheRef.current.get(key)?.size || 0,
-      timestamp: cacheRef.current.get(key)?.timestamp || 0,
-      totalMemoryUsage: memoryUsageRef.current
-    }), [key])
+    getCacheInfo: useCallback(
+      () => ({
+        size: cacheRef.current.get(key)?.size || 0,
+        timestamp: cacheRef.current.get(key)?.timestamp || 0,
+        totalMemoryUsage: memoryUsageRef.current,
+      }),
+      [key]
+    ),
   };
-}; 
+};

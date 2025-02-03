@@ -30,4 +30,4 @@ export interface TokenMetrics {
   volume24h: number;
   priceChange24h: number;
   liquidity: number;
-} 
+}

@@ -61,7 +61,7 @@ export const RecentTransactions = ({ transactions }: RecentTransactionsProps) =>
             </TableRow>
           </TableHead>
           <TableBody>
-            {transactions.map((transaction) => (
+            {transactions.map(transaction => (
               <TableRow key={transaction.id}>
                 <TableCell>{formatDate(transaction.timestamp)}</TableCell>
                 <TableCell>
@@ -95,4 +95,4 @@ export const RecentTransactions = ({ transactions }: RecentTransactionsProps) =>
       </TableContainer>
     </Paper>
   );
-}; 
+};

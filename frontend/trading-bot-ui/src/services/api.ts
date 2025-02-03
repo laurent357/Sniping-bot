@@ -66,7 +66,7 @@ class Api {
     });
 
     // Intercepteur pour ajouter le token JWT
-    this.client.interceptors.request.use((config) => {
+    this.client.interceptors.request.use(config => {
       const token = localStorage.getItem('jwt_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -85,10 +85,7 @@ class Api {
   }
 
   // Pools
-  async getActivePools(params?: {
-    dex?: string;
-    min_volume?: number;
-  }): Promise<Pool[]> {
+  async getActivePools(params?: { dex?: string; min_volume?: number }): Promise<Pool[]> {
     const { data } = await this.client.get('/pools/active', { params });
     return data.pools;
   }
@@ -137,9 +134,7 @@ class Api {
   private handleError(error: any): never {
     if (error.response) {
       // Erreur serveur avec réponse
-      throw new Error(
-        error.response.data.message || 'Une erreur est survenue'
-      );
+      throw new Error(error.response.data.message || 'Une erreur est survenue');
     } else if (error.request) {
       // Pas de réponse du serveur
       throw new Error('Impossible de contacter le serveur');
@@ -153,4 +148,4 @@ class Api {
 // Export une instance unique
 export const api = new Api({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api/v1',
-}); 
+});

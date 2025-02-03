@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import {
   Paper,
@@ -60,22 +61,22 @@ export const ConfigForm = () => {
   const [newToken, setNewToken] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleChange = (section: ConfigSection, field: string) => (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = event.target.type === 'checkbox' ? event.target.checked : Number(event.target.value);
-    setConfig((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value,
-      },
-    }));
-  };
+  const handleChange =
+    (section: ConfigSection, field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value =
+        event.target.type === 'checkbox' ? event.target.checked : Number(event.target.value);
+      setConfig(prev => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [field]: value,
+        },
+      }));
+    };
 
   const handleAddToken = () => {
     if (newToken && !config.filters.blacklistedTokens.includes(newToken)) {
-      setConfig((prev) => ({
+      setConfig(prev => ({
         ...prev,
         filters: {
           ...prev.filters,
@@ -87,11 +88,11 @@ export const ConfigForm = () => {
   };
 
   const handleRemoveToken = (token: string) => {
-    setConfig((prev) => ({
+    setConfig(prev => ({
       ...prev,
       filters: {
         ...prev.filters,
-        blacklistedTokens: prev.filters.blacklistedTokens.filter((t) => t !== token),
+        blacklistedTokens: prev.filters.blacklistedTokens.filter(t => t !== token),
       },
     }));
   };
@@ -167,20 +168,16 @@ export const ConfigForm = () => {
                 <TextField
                   size="small"
                   value={newToken}
-                  onChange={(e) => setNewToken(e.target.value)}
+                  onChange={e => setNewToken(e.target.value)}
                   placeholder="Adresse du token"
                   sx={{ flexGrow: 1 }}
                 />
-                <Button
-                  variant="contained"
-                  onClick={handleAddToken}
-                  startIcon={<AddIcon />}
-                >
+                <Button variant="contained" onClick={handleAddToken} startIcon={<AddIcon />}>
                   Ajouter
                 </Button>
               </Box>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {config.filters.blacklistedTokens.map((token) => (
+                {config.filters.blacklistedTokens.map(token => (
                   <Chip
                     key={token}
                     label={token}
@@ -294,7 +291,7 @@ export const ConfigForm = () => {
           control={
             <Switch
               checked={config.enabled}
-              onChange={(e) => setConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
+              onChange={e => setConfig(prev => ({ ...prev, enabled: e.target.checked }))}
             />
           }
           label="Activer le Bot"
@@ -304,15 +301,11 @@ export const ConfigForm = () => {
         </Button>
       </Box>
 
-      <Snackbar
-        open={showSuccess}
-        autoHideDuration={6000}
-        onClose={() => setShowSuccess(false)}
-      >
+      <Snackbar open={showSuccess} autoHideDuration={6000} onClose={() => setShowSuccess(false)}>
         <Alert severity="success" onClose={() => setShowSuccess(false)}>
           Configuration sauvegardée avec succès !
         </Alert>
       </Snackbar>
     </Paper>
   );
-}; 
+};

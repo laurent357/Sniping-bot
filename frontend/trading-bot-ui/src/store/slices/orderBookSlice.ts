@@ -38,4 +38,4 @@ const orderBookSlice = createSlice({
 });
 
 export const { setOrderBook, setLoading, setError } = orderBookSlice.actions;
-export default orderBookSlice.reducer; 
+export default orderBookSlice.reducer;

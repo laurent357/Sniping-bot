@@ -6,7 +6,7 @@ export enum EventType {
   SECURITY_ALERT = 'security_alert',
   STATS_UPDATE = 'stats_update',
   POOL_UPDATE = 'pool_update',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 interface WSEvent {
@@ -54,12 +54,12 @@ export class WebSocketClient extends EventEmitter {
       this.emit('disconnected');
     };
 
-    this.ws.onerror = (error) => {
+    this.ws.onerror = error => {
       console.error('Erreur WebSocket:', error);
       this.emit('error', error);
     };
 
-    this.ws.onmessage = (event) => {
+    this.ws.onmessage = event => {
       try {
         const wsEvent: WSEvent = JSON.parse(event.data);
         this.handleEvent(wsEvent);
@@ -96,7 +96,9 @@ export class WebSocketClient extends EventEmitter {
     }
 
     this.reconnectAttempts++;
-    console.log(`Tentative de reconnexion ${this.reconnectAttempts}/${this.maxReconnectAttempts} dans ${this.reconnectTimeout}ms`);
+    console.log(
+      `Tentative de reconnexion ${this.reconnectAttempts}/${this.maxReconnectAttempts} dans ${this.reconnectTimeout}ms`
+    );
 
     setTimeout(() => {
       this.connect();
@@ -118,7 +120,7 @@ export class WebSocketClient extends EventEmitter {
       const message: WSEvent = {
         type,
         data,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
       this.ws.send(JSON.stringify(message));
     } else {
@@ -155,4 +157,4 @@ export const wsClient = new WebSocketClient();
 // Hook React pour utiliser le WebSocket
 export const useWebSocket = () => {
   return wsClient;
-}; 
+};

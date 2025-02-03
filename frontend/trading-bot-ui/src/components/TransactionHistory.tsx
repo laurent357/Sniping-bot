@@ -14,15 +14,15 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import {
   OpenInNew as OpenInNewIcon,
   TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon
+  TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material';
 import { useAppSelector } from '../hooks/redux';
-import { formatNumber, formatDate, formatShortAddress } from '../utils/format';
+import { formatNumber, formatDate } from '../utils/format';
 import { Trade } from '../types/trading';
 
 interface TransactionHistoryProps {
@@ -45,9 +45,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Icon sx={{ color }} />
-        <Typography sx={{ color }}>
-          {isBuy ? 'BUY' : 'SELL'}
-        </Typography>
+        <Typography sx={{ color }}>{isBuy ? 'BUY' : 'SELL'}</Typography>
       </Box>
     );
   };
@@ -56,39 +54,34 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
     const statusMap = {
       completed: {
         label: 'Completed',
-        color: 'success'
+        color: 'success',
       },
       pending: {
         label: 'Pending',
-        color: 'warning'
+        color: 'warning',
       },
       failed: {
         label: 'Failed',
-        color: 'error'
-      }
+        color: 'error',
+      },
     };
 
     const status = statusMap[trade.status || 'completed'];
     return (
-      <Chip
-        label={status.label}
-        color={status.color as any}
-        size="small"
-        variant="outlined"
-      />
+      <Chip label={status.label} color={status.color as any} size="small" variant="outlined" />
     );
   };
 
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+        >
           Transaction History
-          <Chip
-            label={`${trades.length} trades`}
-            size="small"
-            sx={{ ml: 'auto' }}
-          />
+          <Chip label={`${trades.length} trades`} size="small" sx={{ ml: 'auto' }} />
         </Typography>
 
         <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
@@ -106,7 +99,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
               </TableRow>
             </TableHead>
             <TableBody>
-              {trades.slice(0, maxItems).map((trade) => (
+              {trades.slice(0, maxItems).map(trade => (
                 <TableRow
                   key={trade.id}
                   sx={{
@@ -124,15 +117,9 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
                   </TableCell>
                   <TableCell>{renderTradeSide(trade)}</TableCell>
                   <TableCell>{trade.tokenPair}</TableCell>
-                  <TableCell align="right">
-                    {formatNumber(trade.price, 4)}
-                  </TableCell>
-                  <TableCell align="right">
-                    {formatNumber(trade.size, 4)}
-                  </TableCell>
-                  <TableCell align="right">
-                    {formatNumber(trade.price * trade.size, 2)}
-                  </TableCell>
+                  <TableCell align="right">{formatNumber(trade.price, 4)}</TableCell>
+                  <TableCell align="right">{formatNumber(trade.size, 4)}</TableCell>
+                  <TableCell align="right">{formatNumber(trade.price * trade.size, 2)}</TableCell>
                   <TableCell>{renderStatus(trade)}</TableCell>
                   <TableCell align="center">
                     <Tooltip title="View on Explorer">
@@ -146,7 +133,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
                   </TableCell>
                 </TableRow>
               ))}
-              
+
               {trades.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} align="center">
@@ -162,4 +149,4 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
       </CardContent>
     </Card>
   );
-}; 
+};

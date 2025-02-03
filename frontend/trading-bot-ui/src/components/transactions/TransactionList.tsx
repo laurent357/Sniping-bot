@@ -121,10 +121,7 @@ const TransactionRow = ({ transaction }: TransactionRowProps) => {
                             transaction.hash.length - 8
                           )}`}
                         </Link>
-                        <IconButton
-                          size="small"
-                          onClick={() => copyToClipboard(transaction.hash)}
-                        >
+                        <IconButton size="small" onClick={() => copyToClipboard(transaction.hash)}>
                           <ContentCopyIcon fontSize="small" />
                         </IconButton>
                       </Box>
@@ -153,9 +150,7 @@ const TransactionRow = ({ transaction }: TransactionRowProps) => {
                         <Typography color="text.secondary" gutterBottom>
                           Route de Trading
                         </Typography>
-                        <Typography variant="body2">
-                          {transaction.route.join(' → ')}
-                        </Typography>
+                        <Typography variant="body2">{transaction.route.join(' → ')}</Typography>
                       </CardContent>
                     </Card>
                   </Grid>
@@ -214,10 +209,7 @@ const StatsCard = ({ stats }: StatsCardProps) => {
             <Typography color="text.secondary" gutterBottom>
               Profit/Perte
             </Typography>
-            <Typography
-              variant="h6"
-              color={stats.profitLoss >= 0 ? 'success.main' : 'error.main'}
-            >
+            <Typography variant="h6" color={stats.profitLoss >= 0 ? 'success.main' : 'error.main'}>
               {formatCurrency(stats.profitLoss)}
             </Typography>
           </Grid>
@@ -266,7 +258,7 @@ export const TransactionList = () => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [page, rowsPerPage, filters]);
+  }, [fetchTransactions]);
 
   const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
@@ -290,8 +282,8 @@ export const TransactionList = () => {
           <DatePicker
             label="Date Début"
             value={filters.startDate ? new Date(filters.startDate) : null}
-            onChange={(date) =>
-              setFilters((prev) => ({
+            onChange={date =>
+              setFilters(prev => ({
                 ...prev,
                 startDate: date?.toISOString(),
               }))
@@ -303,8 +295,8 @@ export const TransactionList = () => {
           <DatePicker
             label="Date Fin"
             value={filters.endDate ? new Date(filters.endDate) : null}
-            onChange={(date) =>
-              setFilters((prev) => ({
+            onChange={date =>
+              setFilters(prev => ({
                 ...prev,
                 endDate: date?.toISOString(),
               }))
@@ -318,8 +310,8 @@ export const TransactionList = () => {
             fullWidth
             label="Type"
             value={filters.type || 'all'}
-            onChange={(e) =>
-              setFilters((prev) => ({
+            onChange={e =>
+              setFilters(prev => ({
                 ...prev,
                 type: e.target.value as 'buy' | 'sell' | 'all',
               }))
@@ -336,8 +328,8 @@ export const TransactionList = () => {
             fullWidth
             label="Statut"
             value={filters.status || 'all'}
-            onChange={(e) =>
-              setFilters((prev) => ({
+            onChange={e =>
+              setFilters(prev => ({
                 ...prev,
                 status: e.target.value as 'completed' | 'pending' | 'failed' | 'all',
               }))
@@ -366,7 +358,7 @@ export const TransactionList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.transactions.map((transaction) => (
+            {data.transactions.map(transaction => (
               <TransactionRow key={transaction.id} transaction={transaction} />
             ))}
           </TableBody>
@@ -388,4 +380,4 @@ export const TransactionList = () => {
       />
     </Paper>
   );
-}; 
+};

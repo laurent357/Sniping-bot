@@ -56,7 +56,9 @@ export const StatsOverview = ({ stats }: StatsOverviewProps) => {
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' }).format(value);
 
   const formatPercent = (value: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'percent', minimumFractionDigits: 2 }).format(value / 100);
+    new Intl.NumberFormat('fr-FR', { style: 'percent', minimumFractionDigits: 2 }).format(
+      value / 100
+    );
 
   return (
     <Grid container spacing={3}>
@@ -110,4 +112,4 @@ export const StatsOverview = ({ stats }: StatsOverviewProps) => {
       </Grid>
     </Grid>
   );
-}; 
+};

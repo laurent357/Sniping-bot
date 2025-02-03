@@ -69,12 +69,12 @@ class WebSocketService extends EventEmitter {
       this.scheduleReconnect();
     };
 
-    this.ws.onerror = (error) => {
+    this.ws.onerror = error => {
       console.error('Erreur WebSocket:', error);
       this.emit('error', error);
     };
 
-    this.ws.onmessage = (event) => {
+    this.ws.onmessage = event => {
       try {
         const message: WebSocketEvent = JSON.parse(event.data);
         this.handleMessage(message);
@@ -98,10 +98,7 @@ class WebSocketService extends EventEmitter {
   }
 
   private scheduleReconnect(): void {
-    if (
-      this.reconnectTimeout ||
-      this.reconnectAttempts >= this.config.maxReconnectAttempts
-    ) {
+    if (this.reconnectTimeout || this.reconnectAttempts >= this.config.maxReconnectAttempts) {
       return;
     }
 
@@ -144,4 +141,4 @@ class WebSocketService extends EventEmitter {
 // Export une instance unique
 export const ws = new WebSocketService({
   url: process.env.REACT_APP_WS_URL || 'ws://localhost:5000/ws',
-}); 
+});

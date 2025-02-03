@@ -40,4 +40,4 @@ export interface PaginatedTransactions {
   page: number;
   pageSize: number;
   stats: TransactionStats;
-} 
+}

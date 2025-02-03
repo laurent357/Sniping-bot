@@ -71,9 +71,7 @@ const tradingSlice = createSlice({
       }
     },
     updateTrade(state, action: PayloadAction<Trade>) {
-      const index = state.trades.findIndex(
-        trade => trade.id === action.payload.id
-      );
+      const index = state.trades.findIndex(trade => trade.id === action.payload.id);
       if (index !== -1) {
         state.trades[index] = action.payload;
       }
@@ -82,10 +80,10 @@ const tradingSlice = createSlice({
       state.error = null;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     // fetchNewTokens
     builder
-      .addCase(fetchNewTokens.pending, (state) => {
+      .addCase(fetchNewTokens.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
@@ -100,7 +98,7 @@ const tradingSlice = createSlice({
 
     // fetchActivePools
     builder
-      .addCase(fetchActivePools.pending, (state) => {
+      .addCase(fetchActivePools.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
@@ -115,7 +113,7 @@ const tradingSlice = createSlice({
 
     // fetchTradeHistory
     builder
-      .addCase(fetchTradeHistory.pending, (state) => {
+      .addCase(fetchTradeHistory.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
@@ -130,11 +128,11 @@ const tradingSlice = createSlice({
 
     // executeTrade
     builder
-      .addCase(executeTrade.pending, (state) => {
+      .addCase(executeTrade.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(executeTrade.fulfilled, (state) => {
+      .addCase(executeTrade.fulfilled, state => {
         state.isLoading = false;
       })
       .addCase(executeTrade.rejected, (state, action) => {
@@ -144,11 +142,6 @@ const tradingSlice = createSlice({
   },
 });
 
-export const {
-  setSelectedToken,
-  addNewToken,
-  updateTrade,
-  clearError,
-} = tradingSlice.actions;
+export const { setSelectedToken, addNewToken, updateTrade, clearError } = tradingSlice.actions;
 
-export default tradingSlice.reducer; 
+export default tradingSlice.reducer;

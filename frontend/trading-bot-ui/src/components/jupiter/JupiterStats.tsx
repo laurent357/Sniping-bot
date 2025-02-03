@@ -28,15 +28,31 @@ import {
 import { JupiterStatistics, PoolMetrics, TokenPair } from '../../types/jupiter';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
-const StatCard = ({ title, value, suffix = '', color = 'primary.main' }) => (
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  suffix?: string;
+  color?: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({
+  title,
+  value,
+  suffix = '',
+  color = 'primary.main',
+}) => (
   <Card>
     <CardContent>
       <Typography color="text.secondary" gutterBottom>
         {title}
       </Typography>
-      <Typography variant="h5" sx={{ color }}>
+      <Typography variant="h4" component="div" sx={{ color }}>
         {value}
-        {suffix}
+        {suffix && (
+          <Typography component="span" variant="h6" sx={{ ml: 1 }}>
+            {suffix}
+          </Typography>
+        )}
       </Typography>
     </CardContent>
   </Card>
@@ -65,7 +81,7 @@ const PoolsTable = ({ pools }: { pools: PoolMetrics[] }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {pools.map((pool) => (
+          {pools.map(pool => (
             <TableRow key={pool.poolAddress}>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -112,7 +128,7 @@ const PairsTable = ({ pairs }: { pairs: TokenPair[] }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {pairs.map((pair) => (
+          {pairs.map(pair => (
             <TableRow key={`${pair.tokenA}-${pair.tokenB}`}>
               <TableCell>
                 {pair.symbolA}/{pair.symbolB}
@@ -150,16 +166,8 @@ const VolumeChart = ({ data }: { data: { timestamp: string; volume: number }[] }
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="timestamp"
-            tickFormatter={formatDate}
-            tick={{ fontSize: 12 }}
-          />
-          <YAxis
-            tickFormatter={formatCurrency}
-            tick={{ fontSize: 12 }}
-            width={80}
-          />
+          <XAxis dataKey="timestamp" tickFormatter={formatDate} tick={{ fontSize: 12 }} />
+          <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 12 }} width={80} />
           <Tooltip
             formatter={(value: number) => [formatCurrency(value), 'Volume']}
             labelFormatter={formatDate}
@@ -191,7 +199,7 @@ export const JupiterStats = () => {
 
   const { isConnected } = useWebSocket<JupiterStatistics>({
     type: 'stats_update',
-    onMessage: (data) => {
+    onMessage: data => {
       setStats(data);
     },
   });
@@ -222,9 +230,7 @@ export const JupiterStats = () => {
   return (
     <Paper sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5">
-          Statistiques Jupiter
-        </Typography>
+        <Typography variant="h5">Statistiques Jupiter</Typography>
         <Chip
           label={isConnected ? 'Connecté' : 'Déconnecté'}
           color={isConnected ? 'success' : 'error'}
@@ -234,28 +240,16 @@ export const JupiterStats = () => {
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Pools Totaux"
-            value={stats.totalPools.toString()}
-          />
+          <StatCard title="Pools Totaux" value={stats.totalPools.toString()} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Volume 24h"
-            value={formatCurrency(stats.totalVolume24h)}
-          />
+          <StatCard title="Volume 24h" value={formatCurrency(stats.totalVolume24h)} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Trades 24h"
-            value={stats.totalTrades24h.toString()}
-          />
+          <StatCard title="Trades 24h" value={stats.totalTrades24h.toString()} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard
-            title="Slippage Moyen"
-            value={formatPercent(stats.averageSlippage24h)}
-          />
+          <StatCard title="Slippage Moyen" value={formatPercent(stats.averageSlippage24h)} />
         </Grid>
       </Grid>
 
@@ -280,15 +274,11 @@ export const JupiterStats = () => {
         <PairsTable pairs={stats.topPairs} />
       </Box>
 
-      <Snackbar
-        open={showError}
-        autoHideDuration={6000}
-        onClose={() => setShowError(false)}
-      >
+      <Snackbar open={showError} autoHideDuration={6000} onClose={() => setShowError(false)}>
         <Alert severity="error" onClose={() => setShowError(false)}>
           Erreur lors de la récupération des statistiques
         </Alert>
       </Snackbar>
     </Paper>
   );
-}; 
+};

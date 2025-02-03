@@ -19,20 +19,16 @@ describe('useWebSocket Hook', () => {
   });
 
   it('devrait se connecter automatiquement au montage si autoConnect est true', () => {
-    renderHook(() =>
-      useWebSocket({ type: WebSocketEventType.PRICE_UPDATE, autoConnect: true })
-    );
+    renderHook(() => useWebSocket({ type: WebSocketEventType.PRICE_UPDATE, autoConnect: true }));
     expect(webSocketService.connect).toHaveBeenCalled();
   });
 
   it('ne devrait pas se connecter automatiquement si autoConnect est false', () => {
-    renderHook(() =>
-      useWebSocket({ type: WebSocketEventType.PRICE_UPDATE, autoConnect: false })
-    );
+    renderHook(() => useWebSocket({ type: WebSocketEventType.PRICE_UPDATE, autoConnect: false }));
     expect(webSocketService.connect).not.toHaveBeenCalled();
   });
 
-  it('devrait s\'abonner au type d\'événement spécifié', () => {
+  it("devrait s'abonner au type d'événement spécifié", () => {
     const onMessage = jest.fn();
     renderHook(() =>
       useWebSocket({
@@ -61,4 +57,4 @@ describe('useWebSocket Hook', () => {
     });
     expect(webSocketService.disconnect).toHaveBeenCalled();
   });
-}); 
+});

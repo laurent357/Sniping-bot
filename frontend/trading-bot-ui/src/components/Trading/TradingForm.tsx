@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import {
   Card,
   CardContent,
   Typography,
-  TextField,
-  Button,
   Grid,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  TextField,
   InputAdornment,
   Alert,
+  SelectChangeEvent,
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
@@ -43,40 +43,33 @@ export const TradingForm: React.FC<TradingFormProps> = ({
     inputToken: '',
     outputToken: '',
     amount: 0,
-    slippage: 1.0,
+    slippage: 1,
   });
-
   const [error, setError] = useState<string | null>(null);
 
-  const handleChange = (field: keyof TradingFormValues) => (
-    event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
-  ) => {
-    setValues((prev) => ({
+  const handleSelectChange = (field: 'inputToken' | 'outputToken') => (event: SelectChangeEvent) => {
+    setValues(prev => ({
       ...prev,
       [field]: event.target.value,
     }));
-    setError(null);
+  };
+
+  const handleNumberChange = (field: 'amount' | 'slippage') => (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = parseFloat(event.target.value);
+    if (!isNaN(value)) {
+      setValues(prev => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
-    // Validation
-    if (!values.inputToken || !values.outputToken) {
-      setError('Veuillez sélectionner les tokens');
-      return;
-    }
-    
-    if (values.amount <= 0) {
-      setError('Le montant doit être supérieur à 0');
-      return;
-    }
-    
-    if (values.slippage <= 0 || values.slippage > 100) {
-      setError('Le slippage doit être entre 0 et 100%');
-      return;
-    }
-    
+    setError(null);
+
     try {
       await onSubmit(values);
     } catch (err) {
@@ -90,7 +83,7 @@ export const TradingForm: React.FC<TradingFormProps> = ({
         <Typography variant="h6" gutterBottom>
           Nouvelle Transaction
         </Typography>
-        
+
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             {error && (
@@ -98,16 +91,16 @@ export const TradingForm: React.FC<TradingFormProps> = ({
                 <Alert severity="error">{error}</Alert>
               </Grid>
             )}
-            
+
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Token d'entrée</InputLabel>
                 <Select
                   value={values.inputToken}
-                  onChange={handleChange('inputToken')}
+                  onChange={handleSelectChange('inputToken')}
                   label="Token d'entrée"
                 >
-                  {availableTokens.map((token) => (
+                  {availableTokens.map(token => (
                     <MenuItem key={token.address} value={token.address}>
                       {token.symbol}
                       {token.balance !== undefined && ` (${token.balance})`}
@@ -116,18 +109,18 @@ export const TradingForm: React.FC<TradingFormProps> = ({
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Token de sortie</InputLabel>
                 <Select
                   value={values.outputToken}
-                  onChange={handleChange('outputToken')}
+                  onChange={handleSelectChange('outputToken')}
                   label="Token de sortie"
                 >
                   {availableTokens
-                    .filter((token) => token.address !== values.inputToken)
-                    .map((token) => (
+                    .filter(token => token.address !== values.inputToken)
+                    .map(token => (
                       <MenuItem key={token.address} value={token.address}>
                         {token.symbol}
                       </MenuItem>
@@ -135,37 +128,33 @@ export const TradingForm: React.FC<TradingFormProps> = ({
                 </Select>
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Montant"
                 type="number"
                 value={values.amount}
-                onChange={handleChange('amount')}
+                onChange={handleNumberChange('amount')}
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
               />
             </Grid>
-            
+
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Slippage maximum"
                 type="number"
                 value={values.slippage}
-                onChange={handleChange('slippage')}
+                onChange={handleNumberChange('slippage')}
                 InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">%</InputAdornment>
-                  ),
+                  endAdornment: <InputAdornment position="end">%</InputAdornment>,
                 }}
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <LoadingButton
                 type="submit"
@@ -182,4 +171,4 @@ export const TradingForm: React.FC<TradingFormProps> = ({
       </CardContent>
     </Card>
   );
-}; 
+};

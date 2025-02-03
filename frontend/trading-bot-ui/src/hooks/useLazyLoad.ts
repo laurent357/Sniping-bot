@@ -10,7 +10,7 @@ interface UseLazyLoadOptions {
 export const useLazyLoad = ({
   threshold = LAZY_LOADING_CONFIG.threshold,
   rootMargin = LAZY_LOADING_CONFIG.rootMargin,
-  enabled = true
+  enabled = true,
 }: UseLazyLoadOptions = {}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -32,7 +32,7 @@ export const useLazyLoad = ({
     }
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const [entry] = entries;
         setIsVisible(entry.isIntersecting);
 
@@ -43,7 +43,7 @@ export const useLazyLoad = ({
       },
       {
         threshold,
-        rootMargin
+        rootMargin,
       }
     );
 
@@ -58,13 +58,15 @@ export const useLazyLoad = ({
 
   const measurePerformance = useCallback(() => {
     if (typeof window !== 'undefined' && window.performance) {
-      const navigationStart = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const navigationStart = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
       const now = performance.now();
-      
+
       return {
         timeToLoad: now - navigationStart.startTime,
         timeToFirstByte: navigationStart.responseStart - navigationStart.requestStart,
-        domContentLoaded: navigationStart.domContentLoadedEventEnd - navigationStart.startTime
+        domContentLoaded: navigationStart.domContentLoadedEventEnd - navigationStart.startTime,
       };
     }
     return null;
@@ -74,6 +76,6 @@ export const useLazyLoad = ({
     elementRef,
     isVisible,
     isLoaded,
-    measurePerformance
+    measurePerformance,
   };
-}; 
+};

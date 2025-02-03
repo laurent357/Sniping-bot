@@ -22,7 +22,7 @@ export const useWebSocketWithPerformance = ({
   onMessage,
   onError,
   onClose,
-  onOpen
+  onOpen,
 }: WebSocketOptions) => {
   const wsRef = useRef<WebSocket | null>(null);
   const metricsRef = useRef<WebSocketMetrics>({
@@ -30,7 +30,7 @@ export const useWebSocketWithPerformance = ({
     messageCount: 0,
     errorCount: 0,
     reconnectCount: 0,
-    lastMessageTime: 0
+    lastMessageTime: 0,
   });
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const retryCountRef = useRef(0);
@@ -52,7 +52,7 @@ export const useWebSocketWithPerformance = ({
           if (wsRef.current?.readyState === WebSocket.OPEN) {
             const startTime = performance.now();
             wsRef.current.send('ping');
-            wsRef.current.onmessage = (event) => {
+            wsRef.current.onmessage = event => {
               if (event.data === 'pong') {
                 metricsRef.current.latency = performance.now() - startTime;
               }
@@ -61,7 +61,7 @@ export const useWebSocketWithPerformance = ({
         }, 30000); // Toutes les 30 secondes
       };
 
-      wsRef.current.onmessage = (event) => {
+      wsRef.current.onmessage = event => {
         const now = performance.now();
         metricsRef.current.messageCount++;
         metricsRef.current.lastMessageTime = now;
@@ -81,7 +81,7 @@ export const useWebSocketWithPerformance = ({
         }
       };
 
-      wsRef.current.onerror = (error) => {
+      wsRef.current.onerror = error => {
         metricsRef.current.errorCount++;
         onError?.(error);
         console.error('WebSocket error:', error);
@@ -89,12 +89,12 @@ export const useWebSocketWithPerformance = ({
 
       wsRef.current.onclose = () => {
         onClose?.();
-        
+
         // Tentative de reconnexion
         if (retryCountRef.current < WS_POOLING_CONFIG.maxRetries) {
           retryCountRef.current++;
           metricsRef.current.reconnectCount++;
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();
           }, WS_POOLING_CONFIG.reconnectInterval * retryCountRef.current);
@@ -133,6 +133,6 @@ export const useWebSocketWithPerformance = ({
       }
     }, []),
     getMetrics,
-    reconnect: connect
+    reconnect: connect,
   };
-}; 
+};

@@ -8,7 +8,7 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-describe('Tests d\'intégration DEX', () => {
+describe("Tests d'intégration DEX", () => {
   describe('Jupiter avec Raydium', () => {
     it('devrait récupérer les routes de swap via Jupiter et Raydium', async () => {
       const mockRoutes = {
@@ -30,7 +30,9 @@ describe('Tests d\'intégration DEX', () => {
         })
       );
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/routes/swap?inputMint=0x123&outputMint=0x456&amount=1000000`);
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/routes/swap?inputMint=0x123&outputMint=0x456&amount=1000000`
+      );
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -91,7 +93,9 @@ describe('Tests d\'intégration DEX', () => {
         })
       );
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/routes/swap?inputMint=0x123&outputMint=0x456&amount=1000000`);
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/routes/swap?inputMint=0x123&outputMint=0x456&amount=1000000`
+      );
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -138,7 +142,7 @@ describe('Tests d\'intégration DEX', () => {
 
       expect(response.status).toBe(200);
       expect(data.routes).toHaveLength(3);
-      
+
       // Vérifier que les routes sont triées par meilleur prix
       const amounts = data.routes.map((r: any) => parseInt(r.outAmount));
       const sortedAmounts = [...amounts].sort((a, b) => b - a);
@@ -165,7 +169,7 @@ describe('Tests d\'intégration DEX', () => {
 
       expect(response.status).toBe(200);
       expect(data.measurements).toHaveLength(3);
-      
+
       // Vérifier que tous les DEX ont des temps de réponse acceptables
       data.measurements.forEach((m: any) => {
         expect(m.avgResponseTime).toBeLessThan(200);
@@ -173,4 +177,4 @@ describe('Tests d\'intégration DEX', () => {
       });
     });
   });
-}); 
+});

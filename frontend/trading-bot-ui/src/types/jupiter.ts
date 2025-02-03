@@ -34,4 +34,4 @@ export interface JupiterStatistics {
   topPools: PoolMetrics[];
   volumeHistory: TradingVolume[];
   topPairs: TokenPair[];
-} 
+}

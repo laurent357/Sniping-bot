@@ -36,7 +36,7 @@ export const TokenOverview: React.FC<TokenOverviewProps> = ({ tokens, isLoading 
           Aperçu des Tokens
         </Typography>
         <Grid container spacing={2}>
-          {tokens.map((token) => (
+          {tokens.map(token => (
             <Grid item xs={12} sm={6} md={4} key={token.address}>
               <Box
                 sx={{
@@ -53,9 +53,7 @@ export const TokenOverview: React.FC<TokenOverviewProps> = ({ tokens, isLoading 
                     <Typography variant="body2" color="textSecondary">
                       Prix
                     </Typography>
-                    <Typography variant="body1">
-                      ${token.price.toFixed(6)}
-                    </Typography>
+                    <Typography variant="body1">${token.price.toFixed(6)}</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="textSecondary">
@@ -73,17 +71,13 @@ export const TokenOverview: React.FC<TokenOverviewProps> = ({ tokens, isLoading 
                     <Typography variant="body2" color="textSecondary">
                       Volume 24h
                     </Typography>
-                    <Typography variant="body1">
-                      ${(token.volume24h / 1000).toFixed(1)}k
-                    </Typography>
+                    <Typography variant="body1">${(token.volume24h / 1000).toFixed(1)}k</Typography>
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="textSecondary">
                       Liquidité
                     </Typography>
-                    <Typography variant="body1">
-                      ${(token.liquidity / 1000).toFixed(1)}k
-                    </Typography>
+                    <Typography variant="body1">${(token.liquidity / 1000).toFixed(1)}k</Typography>
                   </Grid>
                 </Grid>
               </Box>
@@ -93,4 +87,4 @@ export const TokenOverview: React.FC<TokenOverviewProps> = ({ tokens, isLoading 
       </CardContent>
     </Card>
   );
-}; 
+};

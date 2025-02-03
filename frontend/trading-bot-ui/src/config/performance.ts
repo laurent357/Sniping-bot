@@ -98,4 +98,4 @@ export const TIMEOUT_CONFIG = {
   websocket: 10000, // ms
   animation: 300, // ms
   transition: 200, // ms
-}; 
+};

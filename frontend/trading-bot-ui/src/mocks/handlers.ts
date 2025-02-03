@@ -51,9 +51,9 @@ export const handlers = [
             price: '0.1',
             change24h: '+5.2%',
             volume24h: '1000000',
-            timestamp: new Date().toISOString()
-          }
-        ]
+            timestamp: new Date().toISOString(),
+          },
+        ],
       })
     );
   }),
@@ -64,7 +64,7 @@ export const handlers = [
       ctx.status(200),
       ctx.json({
         success: true,
-        message: 'Configuration mise à jour'
+        message: 'Configuration mise à jour',
       })
     );
   }),
@@ -81,9 +81,9 @@ export const handlers = [
             token: 'TEST',
             amount: '100',
             price: '0.1',
-            timestamp: new Date().toISOString()
-          }
-        ]
+            timestamp: new Date().toISOString(),
+          },
+        ],
       })
     );
   }),
@@ -96,7 +96,7 @@ export const handlers = [
         totalVolume: '1000000',
         poolCount: 100,
         activeTraders: 500,
-        averageSlippage: '0.1%'
+        averageSlippage: '0.1%',
       })
     );
   }),
@@ -108,7 +108,7 @@ export const handlers = [
       ctx.json({
         success: true,
         transactionId: 'tx123',
-        status: 'COMPLETED'
+        status: 'COMPLETED',
       })
     );
   }),
@@ -122,9 +122,9 @@ export const handlers = [
         checks: {
           honeypot: false,
           contractVerified: true,
-          riskLevel: 'LOW'
-        }
+          riskLevel: 'LOW',
+        },
       })
     );
-  })
-]; 
+  }),
+];

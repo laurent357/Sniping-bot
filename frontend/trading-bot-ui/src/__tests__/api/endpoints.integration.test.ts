@@ -79,7 +79,7 @@ describe('API Endpoints Integration Tests', () => {
   });
 
   describe('GET /api/v1/transactions/history', () => {
-    it('devrait récupérer l\'historique des transactions', async () => {
+    it("devrait récupérer l'historique des transactions", async () => {
       const mockHistory = [
         {
           id: 'tx1',
@@ -181,4 +181,4 @@ describe('API Endpoints Integration Tests', () => {
       expect(data).toEqual(mockSecurityStatus);
     });
   });
-}); 
+});

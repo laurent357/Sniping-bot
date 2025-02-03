@@ -2,7 +2,7 @@ export enum WebSocketEventType {
   PRICE_UPDATE = 'PRICE_UPDATE',
   TRANSACTION_UPDATE = 'TRANSACTION_UPDATE',
   ERROR = 'ERROR',
-  CONNECTION_STATUS = 'CONNECTION_STATUS'
+  CONNECTION_STATUS = 'CONNECTION_STATUS',
 }
 
 export interface WebSocketMessage<T = any> {
@@ -42,4 +42,4 @@ export interface WebSocketConfig {
   url: string;
   reconnectInterval: number;
   maxRetries: number;
-} 
+}
