@@ -2,7 +2,6 @@ use crate::solana_interaction::SolanaInteraction;
 use solana_sdk::{
     instruction::Instruction,
     signature::Signature,
-    commitment_config::CommitmentConfig,
     transaction::Transaction,
     compute_budget::ComputeBudgetInstruction,
 };

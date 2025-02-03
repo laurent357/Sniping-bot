@@ -1,12 +1,12 @@
 use solana_sdk::{
-    signature::{Keypair, Signature},
+    signature::Keypair,
     transaction::Transaction,
     pubkey::Pubkey,
     signer::Signer,
 };
 use std::{
     error::Error,
-    fs::{self, File},
+    fs::File,
     io::{Read, Write},
     path::Path,
     collections::HashMap,
@@ -160,7 +160,7 @@ impl SecurityManager {
     }
 
     /// Vérifie une transaction
-    pub fn verify_transaction(&self, transaction: &Transaction) -> Result<()> {
+    pub fn verify_transaction(&self, transaction: &Transaction) -> Result<(), anyhow::Error> {
         match transaction.verify() {
             Ok(_) => Ok(()),
             Err(e) => {

@@ -11,7 +11,6 @@ use solana_sdk::{
 use solana_program::program_error::ProgramError;
 use anyhow::{Result, Context};
 use log::{info, error};
-use std::str::FromStr;
 
 /// Structure principale pour l'interaction avec Solana
 pub struct SolanaInteraction {
