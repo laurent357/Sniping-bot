@@ -94,7 +94,7 @@ impl TransactionExecutor {
         &self,
         mut instructions: Vec<Instruction>,
         config: TransactionConfig,
-    ) -> Result<Signature, Box<dyn Error>> {
+    ) -> Result<Signature, anyhow::Error> {
         let start_time = Instant::now();
         let mut retries = 0;
 
@@ -106,17 +106,17 @@ impl TransactionExecutor {
             self.solana.simulate_transaction(instructions.clone())?;
         }
 
-        let signers = vec![&self.solana.keypair];
+        let signers = vec![self.solana.get_keypair()];
         loop {
             if start_time.elapsed() > config.timeout {
-                return Err(Box::new(TransactionError::Timeout));
+                return Err(anyhow::anyhow!(TransactionError::Timeout));
             }
 
             if retries >= config.max_retries {
-                return Err(Box::new(TransactionError::MaxRetriesExceeded));
+                return Err(anyhow::anyhow!(TransactionError::MaxRetriesExceeded));
             }
 
-            match self.solana.send_transaction(instructions.clone(), signers).await {
+            match self.solana.send_transaction(instructions.clone(), signers.clone()).await {
                 Ok(signature) => {
                     info!(
                         "Transaction exécutée avec succès après {} retry(s): {}",
@@ -199,19 +199,19 @@ impl TransactionExecutor {
             info!("Monitoring {} pending transactions", pending.len());
             
             // Traite les transactions en attente
-            pending.retain(|(transaction, config)| {
+            pending.retain(|(_tx, _cfg)| {
                 // TODO: Implémenter la logique de monitoring
                 true
             });
         }
     }
 
-    pub async fn process_transactions(&self) -> Result<()> {
+    pub async fn process_transactions(&self) -> Result<(), anyhow::Error> {
         let mut pending = Vec::new();
 
         loop {
             // Traitement des transactions en attente
-            pending.retain(|(_transaction, _config)| {
+            pending.retain(|(_tx, _cfg): &(Transaction, TransactionConfig)| {
                 // Logique de rétention
                 true
             });
@@ -221,14 +221,15 @@ impl TransactionExecutor {
         }
     }
 
-    pub async fn execute_with_retry(&self, instructions: Vec<Instruction>, config: TransactionConfig) -> Result<Signature, AnyhowError> {
+    pub async fn execute_with_retry(&self, instructions: Vec<Instruction>, config: TransactionConfig) -> Result<Signature, anyhow::Error> {
+        let executor = self.clone();
         let handle = tokio::spawn(async move {
-            self.execute_transaction(instructions, config).await
+            executor.execute_transaction(instructions, config).await
         });
 
         match handle.await {
             Ok(result) => result,
-            Err(e) => Err(AnyhowError::msg(format!("Task panicked: {}", e)))
+            Err(e) => Err(anyhow::anyhow!("Task panicked: {}", e))
         }
     }
 }

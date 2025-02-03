@@ -102,10 +102,13 @@ impl SecurityManager {
         amount: u64,
     ) -> Result<(), Box<dyn Error>> {
         // Vérifie les signatures
-        if !transaction.verify() {
-            return Err(Box::new(SecurityError::InvalidSignature(
-                "Signature de transaction invalide".to_string()
-            )));
+        match transaction.verify() {
+            Ok(_) => (),
+            Err(_) => {
+                return Err(Box::new(SecurityError::InvalidSignature(
+                    "Signature de transaction invalide".to_string()
+                )));
+            }
         }
 
         // Vérifie les limites de trading

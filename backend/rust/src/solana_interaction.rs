@@ -170,6 +170,11 @@ impl SolanaInteraction {
         // TODO: Implémenter la logique de swap via Jupiter
         unimplemented!("Swap functionality not yet implemented")
     }
+
+    /// Récupère une référence au keypair
+    pub fn get_keypair(&self) -> &Keypair {
+        &self.keypair
+    }
 }
 
 #[cfg(test)]
