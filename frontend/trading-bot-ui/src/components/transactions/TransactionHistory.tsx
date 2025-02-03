@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -33,11 +33,34 @@ const statusMap: Record<TransactionStatus, { label: string; color: string }> = {
   failed: { label: 'Échoué', color: 'error' },
 };
 
+interface Filters {
+  startDate?: string;
+  endDate?: string;
+  type?: 'buy' | 'sell' | 'all';
+  status?: 'completed' | 'pending' | 'failed' | 'all';
+  token?: string;
+  minAmount?: number;
+  maxAmount?: number;
+}
+
+interface PaginatedTransactions {
+  items: Transaction[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 interface TransactionHistoryProps {
   maxItems?: number;
 }
 
 export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems = 50 }) => {
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filters, setFilters] = useState<Filters>({});
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [totalTransactions, setTotalTransactions] = useState(0);
+
   const getExplorerUrl = (txId: string) => {
     return `https://solscan.io/tx/${txId}`;
   };
@@ -49,9 +72,18 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
   };
 
   const renderStatus = (trade: Transaction) => {
-    const status = statusMap[trade.status];
+    // Utilisation d'une assertion de type avec vérification de sécurité
+    const defaultStatus: TransactionStatus = 'completed';
+    const currentStatus = (trade.status && trade.status in statusMap) ? trade.status as TransactionStatus : defaultStatus;
+    const status = statusMap[currentStatus];
+    
     return (
-      <Chip label={status.label} color={status.color as 'success' | 'warning' | 'error'} size="small" variant="outlined" />
+      <Chip 
+        label={status.label} 
+        color={status.color as 'success' | 'warning' | 'error'} 
+        size="small" 
+        variant="outlined" 
+      />
     );
   };
 
@@ -59,20 +91,31 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
     navigator.clipboard.writeText(text);
   };
 
-  // Exemple de données (à remplacer par les vraies données)
-  const transactions: Transaction[] = [
-    {
-      id: '1',
-      timestamp: '2024-01-20T12:00:00',
-      type: 'buy',
-      tokenSymbol: 'SOL',
-      amount: 100,
-      price: 103.45,
-      status: 'completed',
-      txHash: '0x123...abc',
-    },
-    // ... autres transactions
-  ];
+  const fetchTransactions = async () => {
+    try {
+      const queryParams = new URLSearchParams({
+        page: String(page + 1),
+        pageSize: String(rowsPerPage),
+        ...(filters && Object.fromEntries(
+          Object.entries(filters)
+            .filter(([_, value]) => value !== undefined && value !== 'all') // Remove undefined and 'all' values
+            .map(([key, value]) => [key, String(value)]) // Convert values to strings
+        )),
+      });
+
+      const response = await fetch(`/api/v1/transactions/history?${queryParams}`);
+      const result: PaginatedTransactions = await response.json();
+      
+      setTransactions(result.items);
+      setTotalTransactions(result.total);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des transactions:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [page, rowsPerPage, filters]);
 
   return (
     <TableContainer component={Paper}>
