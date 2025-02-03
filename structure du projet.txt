@@ -1,0 +1,68 @@
+sniping-bot/
+├── backend/
+│   ├── rust/
+│   │   ├── src/
+│   │   │   ├── main.rs
+│   │   │   ├── solana_interaction.rs
+│   │   │   ├── transaction_execution.rs
+│   │   │   └── security.rs
+│   │   ├── Cargo.toml
+│   │   └── Cargo.lock
+│   ├── python/
+│   │   ├── main.py
+│   │   ├── dex_monitoring/
+│   │   │   ├── raydium.py
+│   │   │   ├── orca.py
+│   │   │   └── saber.py
+│   │   ├── transaction_analysis/
+│   │   │   ├── filters.py
+│   │   │   └── ai_analysis.py
+│   │   ├── utils/
+│   │   │   ├── logging.py
+│   │   │   └── config.py
+│   │   └── requirements.txt
+│   └── database/
+│       ├── migrations/
+│       └── db.sqlite3
+├── frontend/
+│   ├── flask_app/
+│   │   ├── app.py
+│   │   ├── templates/
+│   │   │   └── index.html
+│   │   └── static/
+│   │       ├── css/
+│   │       ├── js/
+│   │       └── images/
+│   ├── react_or_vue_app/
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   ├── views/
+│   │   │   ├── App.js
+│   │   │   └── main.js
+│   │   ├── public/
+│   │   ├── package.json
+│   │   └── README.md
+│   └── websockets/
+│       ├── ws_server.py
+│       └── ws_client.js
+├── tests/
+│   ├── unit/
+│   │   ├── rust/
+│   │   └── python/
+│   ├── integration/
+│   │   ├── rust/
+│   │   └── python/
+│   └── end_to_end/
+│       ├── testnet_simulations/
+│       └── mainnet_tests/
+├── docs/
+│   ├── user_guide.md
+│   ├── api_documentation.md
+│   └── architecture_overview.md
+├── scripts/
+│   ├── deploy.sh
+│   ├── start.sh
+│   └── stop.sh
+├── .gitignore
+├── README.md
+└── requirements.txt

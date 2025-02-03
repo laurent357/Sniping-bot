@@ -1,0 +1,94 @@
+# TODO FINAL - SOLANA TOKEN SNIPING BOT
+
+## 1. Tests Frontend (Sprint 1)
+-----------------------------
+### Tests Intégration API
+- [ ] Setup environnement de test
+- [ ] Tests des endpoints REST
+- [ ] Tests WebSocket
+- [ ] Tests gestion erreurs
+- [ ] Tests authentification
+
+### Tests E2E Cypress
+- [ ] Configuration Cypress
+- [ ] Tests flux utilisateur principaux
+- [ ] Tests scénarios d'erreur
+- [ ] Tests performance frontend
+
+## 2. Tests d'Intégration (Sprint 1)
+----------------------------------
+### Tests API/Frontend
+- [ ] Tests communication bidirectionnelle
+- [ ] Tests temps réel
+- [ ] Tests charge
+- [ ] Tests reconnexion
+
+### Tests Jupiter Multi-DEX
+- [ ] Tests Raydium
+- [ ] Tests Orca
+- [ ] Tests Saber
+- [ ] Tests routage optimal
+
+## 3. Tests Environnement Réel (Sprint 2)
+---------------------------------------
+### Tests Testnet
+- [ ] Déploiement testnet
+- [ ] Tests transactions
+- [ ] Tests performance
+- [ ] Tests sécurité
+
+### Tests Mainnet
+- [ ] Tests en mode simulation
+- [ ] Tests volumes limités
+- [ ] Tests performance réelle
+- [ ] Tests sécurité production
+
+## 4. Optimisation Performance (Sprint 2)
+--------------------------------------
+### Latence
+- [ ] Profilage Python/Rust
+- [ ] Optimisation transactions
+- [ ] Réduction overhead
+- [ ] Tests benchmark
+
+### Surveillance Multi-pools
+- [ ] Optimisation mémoire
+- [ ] Parallélisation
+- [ ] Cache intelligent
+- [ ] Métriques performance
+
+## 5. Déploiement (Sprint 3)
+--------------------------
+### Scripts
+- [ ] Script déploiement automatisé
+- [ ] Script backup
+- [ ] Script monitoring
+- [ ] Documentation déploiement
+
+### Infrastructure
+- [ ] Setup RPC Solana
+- [ ] Configuration haute disponibilité
+- [ ] Sécurisation production
+- [ ] Tests charge production
+
+## 6. Maintenance (Sprint 3)
+--------------------------
+### Système Update
+- [ ] Mécanisme mise à jour
+- [ ] Procédure rollback
+- [ ] Documentation maintenance
+- [ ] Formation équipe
+
+### Monitoring
+- [ ] Setup alerting
+- [ ] Logs centralisés
+- [ ] Dashboard monitoring
+- [ ] Procédures incident
+
+# Estimation par Sprint
+----------------------
+Sprint 1 (Tests Frontend & Intégration) : 2 semaines
+Sprint 2 (Tests Réels & Optimisation) : 2 semaines
+Sprint 3 (Déploiement & Maintenance) : 2 semaines
+
+Total : 6 semaines 

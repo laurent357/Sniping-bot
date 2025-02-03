@@ -1,0 +1,175 @@
+Cahier des Charges : Sniping Bot pour Nouveaux Tokens (Optimisé pour Solana)
+
+1. Introduction et Objectifs
+
+1.1 Description du Projet
+
+L'objectif est de développer un bot local capable de détecter et acheter rapidement des nouveaux tokens listés sur des DEX (Decentralized Exchanges) de l'écosystème Solana. L'architecture doit être modulaire et extensible pour intégrer d'autres blockchains à l'avenir.
+
+1.2 Contexte Métier
+
+Ce bot doit permettre aux traders actifs de profiter des opportunités de trading rapide sur Solana en minimisant la latence et en optimisant les transactions.
+
+1.3 Public Cible
+
+Traders actifs sur Solana et autres blockchains intéressés par le sniping de nouveaux tokens.
+
+2. Fonctionnalités Principales
+
+2.1 Détection Rapide des Nouveaux Tokens
+
+Surveillance des pools de liquidité :
+
+Suivi des pools AMM (Automated Market Maker) sur des protocoles comme Raydium, Orca et Saber.
+
+Identification des nouveaux tokens via des événements blockchain (transactions de création de pools).
+
+Filtrage des opportunités :
+
+Filtres personnalisables (market cap minimal, volume attendu, etc.).
+
+Analyse des smart contracts pour vérifier la légitimité des tokens (prévention des honeypots).
+
+2.2 Exécution Ultra-Rapide
+
+Transactions rapides :
+
+Optimisation pour profiter des faibles latences de Solana (<400 ms par transaction).
+
+Gestion efficace des priorités de transaction pour réduire les congestions réseau.
+
+Gestion des gas fees :
+
+Calcul dynamique des frais de transaction (SOL) pour maximiser les gains nets.
+
+Plafond personnalisable pour les gas fees.
+
+2.3 Analyse Prédictive
+
+Évaluation du potentiel :
+
+Utilisation de l'IA pour analyser les données on-chain et off-chain.
+
+Prédiction des mouvements de prix à court terme.
+
+Alertes intelligentes :
+
+Notifications en temps réel lorsque des tokens répondent aux critères définis.
+
+2.4 Extensibilité pour d'Autres Réseaux
+
+Architecture modulaire :
+
+Intégration facile d'autres blockchains (Ethereum, Binance Smart Chain, etc.).
+
+Abstraction des interactions blockchain pour simplifier l'ajout de nouvelles chaînes.
+
+3. Contraintes Techniques
+
+3.1 Langages et Frameworks
+
+Backend :
+
+Rust : Interaction rapide et optimisée avec Solana.
+
+Python : Interface utilisateur et analyse IA (via solana-py).
+
+Frontend :
+
+Interface graphique simple via Flask + React/Vue pour un meilleur confort d'utilisation.
+
+Bibliothèques spécifiques :
+
+Solana SDK pour les interactions blockchain.
+
+Anchor pour le développement de smart contracts si nécessaire.
+
+3.2 Infrastructure
+
+Application locale :
+
+Fonctionne en autonomie (synchronisation initiale avec un RPC Solana requise).
+
+Base de données SQLite pour stocker les paramètres et les analyses.
+
+RPC Solana :
+
+Utilisation d'un RPC public ou privé pour de meilleures performances.
+
+3.3 Performance
+
+Latence :
+
+Temps de réponse < 500 ms pour les achats.
+
+Priorisation des transactions pour minimiser les délais.
+
+Scalabilité :
+
+Surveillance simultanée de plusieurs pools sans ralentissement.
+
+4. Sécurité et Conformité
+
+4.1 Protection des Données
+
+Cryptage local :
+
+Stockage sécurisé des clés privées avec cryptography.
+
+Absence de transmission de données sensibles en dehors de l'application.
+
+4.2 Audit de Code
+
+Tests rigoureux :
+
+Tests unitaires pour chaque module.
+
+Simulation de transactions avant exécution réelle.
+
+Prévention des escroqueries :
+
+Détection des honeypots et rug pulls via analyse de smart contracts.
+
+4.3 Conformité Réglementaire
+
+Respect des lois locales :
+
+Veille à la légalité du bot dans les juridictions concernées.
+
+5. Maintenance et Support
+
+5.1 Mises à Jour
+
+Ajout de nouvelles fonctionnalités :
+
+Extension à d'autres blockchains via mises à jour modulaires.
+
+Correctifs de sécurité :
+
+Patchs réguliers pour combler les vulnérabilités.
+
+5.2 Assistance Technique
+
+Documentation intégrée :
+
+Manuel utilisateur inclus.
+
+Support utilisateur :
+
+Assistance par email ou forum d'entraide.
+
+6. Annexes
+
+6.1 Glossaire
+
+AMM : Automated Market Maker (Protocole de création de pools de liquidité).
+
+PoH : Proof of History (Mécanisme de consensus de Solana).
+
+RPC : Remote Procedure Call (Serveur pour interagir avec Solana).
+
+6.2 Références
+
+Documentation Solana : https://docs.solana.com
+
+Bibliothèque solana-py : https://github.com/michaelhly/solana-py

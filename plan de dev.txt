@@ -1,0 +1,62 @@
+Plan de Développement Technique
+Phase 1 : Conception et Architecture
+
+    Définition de l’architecture logicielle
+        Backend en Rust (interaction avec Solana) et Python (analyse IA et gestion des transactions).
+        Frontend avec Flask + React/Vue pour une interface utilisateur simple et ergonomique.
+        Base de données SQLite pour stocker les paramètres et les historiques de transactions.
+        Système de logs pour suivre l’exécution et détecter d’éventuels problèmes.
+
+    Choix des outils et bibliothèques
+        Solana SDK et solana-py pour les interactions blockchain.
+        cryptography pour la sécurisation des clés privées.
+        WebSockets pour une mise à jour en temps réel des nouveaux tokens listés.
+        Flask API pour la communication entre l’interface utilisateur et le backend.
+
+Phase 2 : Développement du Backend (Rust & Python)
+
+    Module de surveillance des DEX
+        Implémentation d’un observateur de transactions sur Raydium, Orca, Saber.
+        Extraction et analyse des nouveaux pools de liquidité.
+        Mise en place de filtres configurables (market cap, volume, légitimité du token).
+
+    Module d’exécution des transactions
+        Rédaction des smart contracts pour les achats automatisés.
+        Gestion des priorités de transaction pour éviter les congestions réseau.
+        Implémentation du calcul dynamique des gas fees.
+
+    Sécurisation des transactions
+        Vérification des smart contracts des nouveaux tokens pour éviter les honeypots.
+        Implémentation de tests de simulation avant exécution réelle.
+        Stockage chiffré des clés privées et authentification locale pour accéder au bot.
+
+Phase 3 : Développement du Frontend (React/Vue + Flask API)
+
+    Interface utilisateur
+        Dashboard affichant les nouveaux tokens détectés.
+        Système de configuration des filtres et paramètres d’achat automatique.
+        Affichage des transactions passées et en cours avec statut en temps réel.
+
+    Alertes et notifications
+        Implémentation d’alertes en temps réel (via WebSockets).
+        Envoi de notifications (email ou Telegram) lorsque des tokens correspondent aux critères.
+
+Phase 4 : Tests et Optimisation
+
+    Tests unitaires et d’intégration
+        Vérification de chaque module individuellement (surveillance, exécution des transactions, UI).
+        Simulation de transactions sur testnet avant passage en mainnet.
+
+    Optimisation des performances
+        Réduction du temps de réponse < 500 ms pour l’exécution des achats.
+        Gestion optimisée des ressources pour surveiller plusieurs pools simultanément.
+
+Phase 5 : Déploiement et Maintenance
+
+    Mise en production et documentation
+        Déploiement de l’application sur une machine locale avec synchronisation RPC.
+        Rédaction d’un guide utilisateur pour expliquer les fonctionnalités et configurations.
+
+    Mises à jour et support
+        Ajout progressif de compatibilité avec d’autres blockchains.
+        Correctifs réguliers pour améliorer la sécurité et la performance.

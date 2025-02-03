@@ -1,0 +1,11 @@
+solana
+cryptography
+aiohttp
+flask
+flask-cors
+websockets
+python-dotenv
+pytest
+solana-py
+black
+flake8
