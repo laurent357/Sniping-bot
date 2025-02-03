@@ -51,7 +51,7 @@ services:
   # Backend Rust
   rust:
     build:
-      context: ./solana-module
+      context: ./backend/rust
       dockerfile: Dockerfile
     environment:
       - RUST_LOG=info

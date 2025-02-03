@@ -240,14 +240,39 @@ export const TransactionList = () => {
     },
   });
 
+  const createQueryParams = (
+    page: number,
+    pageSize: number,
+    filters: {
+      startDate?: string;
+      endDate?: string;
+      type?: 'all' | 'buy' | 'sell';
+      status?: 'all' | 'pending' | 'completed' | 'failed';
+      token?: string;
+      minAmount?: number;
+      maxAmount?: number;
+    }
+  ) => {
+    const params: Record<string, string> = {
+      page: String(page + 1),
+      pageSize: String(pageSize),
+    };
+
+    // Ajouter les filtres non-undefined
+    if (filters.startDate) params.startDate = filters.startDate;
+    if (filters.endDate) params.endDate = filters.endDate;
+    if (filters.type && filters.type !== 'all') params.type = filters.type;
+    if (filters.status && filters.status !== 'all') params.status = filters.status;
+    if (filters.token) params.token = filters.token;
+    if (filters.minAmount) params.minAmount = String(filters.minAmount);
+    if (filters.maxAmount) params.maxAmount = String(filters.maxAmount);
+
+    return new URLSearchParams(params);
+  };
+
   const fetchTransactions = async () => {
     try {
-      const queryParams = new URLSearchParams({
-        page: String(page + 1),
-        pageSize: String(rowsPerPage),
-        ...filters,
-      });
-
+      const queryParams = createQueryParams(page, rowsPerPage, filters);
       const response = await fetch(`/api/v1/transactions/history?${queryParams}`);
       const result: PaginatedTransactions = await response.json();
       setData(result);

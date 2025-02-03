@@ -14,6 +14,7 @@ use std::{
 use tokio::sync::Mutex;
 use log::{info, warn, error};
 use thiserror::Error;
+use anyhow::{Result, Error as AnyhowError};
 
 #[derive(Error, Debug)]
 pub enum TransactionError {
@@ -106,6 +107,7 @@ impl TransactionExecutor {
             self.solana.simulate_transaction(instructions.clone())?;
         }
 
+        let signers = vec![&self.solana.keypair];
         loop {
             if start_time.elapsed() > config.timeout {
                 return Err(Box::new(TransactionError::Timeout));
@@ -115,7 +117,7 @@ impl TransactionExecutor {
                 return Err(Box::new(TransactionError::MaxRetriesExceeded));
             }
 
-            match self.solana.send_transaction(instructions.clone()) {
+            match self.solana.send_transaction(instructions.clone(), signers).await {
                 Ok(signature) => {
                     info!(
                         "Transaction exécutée avec succès après {} retry(s): {}",
@@ -202,6 +204,32 @@ impl TransactionExecutor {
                 // TODO: Implémenter la logique de monitoring
                 true
             });
+        }
+    }
+
+    pub async fn process_transactions(&self) -> Result<()> {
+        let mut pending = Vec::new();
+
+        loop {
+            // Traitement des transactions en attente
+            pending.retain(|(_transaction, _config)| {
+                // Logique de rétention
+                true
+            });
+
+            // Attente de nouvelles transactions
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    }
+
+    pub async fn execute_with_retry(&self, instructions: Vec<Instruction>, config: TransactionConfig) -> Result<Signature, AnyhowError> {
+        let handle = tokio::spawn(async move {
+            self.execute_transaction(instructions, config).await
+        });
+
+        match handle.await {
+            Ok(result) => result,
+            Err(e) => Err(AnyhowError::msg(format!("Task panicked: {}", e)))
         }
     }
 }

@@ -12,11 +12,15 @@ export interface OrderBook {
 
 export interface Trade {
   id: string;
-  price: number;
+  execution_price: number;
   size: number;
   side: 'buy' | 'sell';
-  timestamp: number;
+  timestamp: string;
   tokenPair: string;
+  status: 'pending' | 'completed' | 'failed';
+  input_token: string;
+  output_token: string;
+  amount: number;
 }
 
 export interface TokenInfo {
@@ -28,6 +32,18 @@ export interface TokenInfo {
   price?: number;
   priceChange24h?: number;
   volume24h?: number;
+}
+
+export interface Token {
+  address: string;
+  symbol: string;
+  name: string;
+  created_at: string;
+  initial_price: number;
+  initial_liquidity: number;
+  pool_address: string;
+  liquidity_usd: number;
+  risk_score: number;
 }
 
 export interface TradingState {

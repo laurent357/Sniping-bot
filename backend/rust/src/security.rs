@@ -16,6 +16,7 @@ use tokio::sync::RwLock;
 use log::{info, warn, error};
 use thiserror::Error;
 use serde::{Serialize, Deserialize};
+use anyhow;
 
 #[derive(Error, Debug)]
 pub enum SecurityError {
@@ -158,8 +159,23 @@ impl SecurityManager {
         info!("Volumes quotidiens réinitialisés");
     }
 
+    /// Vérifie une transaction
+    pub fn verify_transaction(&self, transaction: &Transaction) -> Result<()> {
+        match transaction.verify() {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                error!("Transaction invalide: {}", e);
+                Err(anyhow::anyhow!("Transaction invalide"))
+            }
+        }
+    }
+
+    /// Récupère une keypair par sa pubkey
     pub async fn get_keypair(&self, pubkey: &Pubkey) -> Option<Keypair> {
-        self.keypairs.read().await.get(pubkey).cloned()
+        self.keypairs.read().await.get(pubkey).map(|kp| {
+            let bytes = kp.to_bytes();
+            Keypair::from_bytes(&bytes).ok()
+        }).flatten()
     }
 }
 

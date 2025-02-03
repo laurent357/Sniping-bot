@@ -6,11 +6,12 @@ use solana_sdk::{
     signer::Signer,
     transaction::Transaction,
     instruction::Instruction,
+    program_pack::Pack,
 };
 use solana_program::program_error::ProgramError;
 use anyhow::{Result, Context};
+use log::{info, error};
 use std::str::FromStr;
-use log::{info, error, warn};
 
 /// Structure principale pour l'interaction avec Solana
 pub struct SolanaInteraction {
@@ -43,7 +44,7 @@ impl SolanaInteraction {
     
     /// Récupère les informations d'un compte
     pub fn get_account_info(&self, pubkey: &Pubkey) -> Result<Option<solana_sdk::account::Account>> {
-        self.rpc_client.get_account(pubkey).context("Failed to get account info")
+        Ok(self.rpc_client.get_account(pubkey).ok())
     }
     
     /// Envoie une transaction
@@ -100,24 +101,25 @@ impl SolanaInteraction {
     }
     
     /// Vérifie si une transaction est confirmée
-    pub fn confirm_transaction(&self, signature: &Signature) -> Result<bool> {
+    pub async fn confirm_transaction(&self, signature: &Signature) -> Result<bool> {
         self.rpc_client
             .confirm_transaction_with_spinner(
                 signature,
                 &self.rpc_client.get_latest_blockhash()?,
                 CommitmentConfig::confirmed(),
             )
+            .map(|_| true)
             .context("Failed to confirm transaction")
     }
     
     /// Crée un compte token
-    pub fn create_token_account(
+    pub async fn create_token_account(
         &self,
         token_mint: &Pubkey,
         owner: &Pubkey,
     ) -> Result<Pubkey> {
         let account = Keypair::new();
-        let space = spl_token::state::Account::LEN;
+        let space = spl_token::state::Account::get_packed_len();
         let rent = self.rpc_client
             .get_minimum_balance_for_rent_exemption(space)?;
             
@@ -139,7 +141,7 @@ impl SolanaInteraction {
         let instructions = vec![create_account_ix, init_account_ix];
         let signers = vec![&self.keypair, &account];
         
-        self.send_transaction(instructions, signers)?;
+        self.send_transaction(instructions, signers).await?;
         
         Ok(account.pubkey())
     }
@@ -158,18 +160,13 @@ impl SolanaInteraction {
         self.get_token_account_balance(token_account)
     }
     
-    /// Récupère les informations d'un compte
-    pub fn get_account_info(&self, pubkey: &Pubkey) -> Result<Option<solana_sdk::account::Account>> {
-        self.rpc_client.get_account(pubkey).context("Failed to get account info")
-    }
-    
-    /// Récupère les informations d'un compte
+    /// Récupère les informations d'un compte et effectue un swap de tokens
     pub async fn swap_tokens(
         &self,
-        source_token: &Pubkey,
-        destination_token: &Pubkey,
-        amount: u64,
-        slippage: f64,
+        _source_token: &Pubkey,
+        _destination_token: &Pubkey,
+        _amount: u64,
+        _slippage: f64,
     ) -> Result<Signature> {
         // TODO: Implémenter la logique de swap via Jupiter
         unimplemented!("Swap functionality not yet implemented")

@@ -14,6 +14,11 @@ interface WebSocketEvent<T = any> {
 export interface NewTokenEvent {
   address: string;
   symbol: string;
+  name: string;
+  initialPrice: number;
+  initialLiquidity: number;
+  poolAddress: string;
+  createdAt: string;
   liquidity_usd: number;
   risk_score: number;
 }
@@ -23,6 +28,10 @@ export interface TradeUpdateEvent {
   status: 'pending' | 'completed' | 'failed';
   execution_price: number;
   timestamp: string;
+  amount: number;
+  trade_type: 'buy' | 'sell';
+  input_token: string;
+  output_token: string;
 }
 
 class WebSocketService extends EventEmitter {
@@ -85,16 +94,37 @@ class WebSocketService extends EventEmitter {
   }
 
   private handleMessage(message: WebSocketEvent): void {
-    switch (message.event) {
-      case 'token.new':
-        this.emit('newToken', message.data as NewTokenEvent);
-        break;
-      case 'trade.update':
-        this.emit('tradeUpdate', message.data as TradeUpdateEvent);
-        break;
-      default:
-        console.warn('Event non géré:', message.event);
+    try {
+      switch (message.event) {
+        case 'token.new':
+          if (this.validateNewTokenEvent(message.data)) {
+            this.emit('newToken', message.data as NewTokenEvent);
+          }
+          break;
+        case 'trade.update':
+          if (this.validateTradeUpdateEvent(message.data)) {
+            this.emit('tradeUpdate', message.data as TradeUpdateEvent);
+          }
+          break;
+        default:
+          console.warn(`Event non géré: ${message.event}`, message);
+      }
+    } catch (error) {
+      console.error('Erreur lors du traitement du message:', error);
+      this.emit('error', error);
     }
+  }
+
+  private validateNewTokenEvent(data: any): data is NewTokenEvent {
+    const requiredFields = ['address', 'symbol', 'name', 'initialPrice', 'initialLiquidity', 
+                          'poolAddress', 'createdAt', 'liquidity_usd', 'risk_score'];
+    return requiredFields.every(field => field in data);
+  }
+
+  private validateTradeUpdateEvent(data: any): data is TradeUpdateEvent {
+    const requiredFields = ['transaction_id', 'status', 'execution_price', 'timestamp', 
+                          'amount', 'trade_type', 'input_token', 'output_token'];
+    return requiredFields.every(field => field in data);
   }
 
   private scheduleReconnect(): void {
@@ -135,6 +165,10 @@ class WebSocketService extends EventEmitter {
       this.ws.close();
       this.ws = null;
     }
+  }
+
+  getConnectionState(): number {
+    return this.ws?.readyState ?? WebSocket.CLOSED;
   }
 }
 
