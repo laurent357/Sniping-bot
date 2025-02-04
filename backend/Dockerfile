@@ -16,7 +16,7 @@ RUN pip install --user -r requirements.txt
 # Production stage
 FROM python:3.9-slim
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
 # Copie des dépendances depuis le build stage
 COPY --from=builder /root/.local /root/.local

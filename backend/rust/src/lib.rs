@@ -1,6 +1,7 @@
 pub mod solana_interaction;
 pub mod transaction_execution;
 pub mod security;
+pub mod ipc;
 
 use log::LevelFilter;
 use std::error::Error;
@@ -18,6 +19,7 @@ pub fn init_logging() -> Result<(), Box<dyn Error>> {
 pub use solana_interaction::SolanaInteraction;
 pub use transaction_execution::TransactionExecutor;
 pub use security::SecurityManager;
+pub use ipc::{IPCServer, IPCMessage};
 
 // Re-export des types Solana couramment utilisés
 pub use solana_sdk::{

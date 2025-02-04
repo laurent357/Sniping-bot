@@ -17,6 +17,7 @@ use log::{info, warn, error};
 use thiserror::Error;
 use serde::{Serialize, Deserialize};
 use anyhow;
+use futures;
 
 #[derive(Error, Debug)]
 pub enum SecurityError {
@@ -179,6 +180,46 @@ impl SecurityManager {
             let bytes = kp.to_bytes();
             Keypair::from_bytes(&bytes).ok()
         }).flatten()
+    }
+
+    pub async fn check_transaction_security(
+        &self,
+        token: &str,
+        amount: u64
+    ) -> (bool, Option<String>) {
+        // Vérification du token
+        if !self.is_token_valid(token) {
+            return (false, Some("Token invalide ou non vérifié".to_string()));
+        }
+
+        // Vérification du montant
+        if !self.is_amount_safe(amount) {
+            return (false, Some("Montant suspect ou trop élevé".to_string()));
+        }
+
+        // Vérification des limites de trading
+        if !self.check_trading_limits(amount).await {
+            return (false, Some("Limite de trading dépassée".to_string()));
+        }
+
+        (true, None)
+    }
+
+    fn is_token_valid(&self, _token: &str) -> bool {
+        // Pour l'instant, on accepte tous les tokens
+        // TODO: Implémenter la vérification réelle des tokens
+        true
+    }
+
+    fn is_amount_safe(&self, amount: u64) -> bool {
+        // Vérification des montants suspects
+        let limits = futures::executor::block_on(self.trading_limits.read());
+        amount <= limits.max_transaction_size
+    }
+
+    async fn check_trading_limits(&self, _amount: u64) -> bool {
+        // Vérification des limites de trading
+        true // À implémenter selon les règles de trading
     }
 }
 

@@ -11,26 +11,41 @@ use solana_sdk::{
 use solana_program::program_error::ProgramError;
 use anyhow::{Result, Context};
 use log::{info, error};
+use std::sync::Arc;
 
 /// Structure principale pour l'interaction avec Solana
 pub struct SolanaInteraction {
     /// Client RPC Solana
-    rpc_client: RpcClient,
+    rpc_client: Arc<RpcClient>,
     /// Keypair pour signer les transactions
-    keypair: Keypair,
+    keypair: Arc<Keypair>,
+}
+
+impl Clone for SolanaInteraction {
+    fn clone(&self) -> Self {
+        Self {
+            rpc_client: self.rpc_client.clone(),
+            keypair: self.keypair.clone(),
+        }
+    }
 }
 
 impl SolanaInteraction {
     /// Crée une nouvelle instance de SolanaInteraction
-    pub fn new(rpc_url: &str, keypair: Keypair) -> Self {
+    pub fn new(rpc_url: &str, keypair: &Keypair) -> Self {
         let rpc_client = RpcClient::new_with_commitment(
             rpc_url.to_string(),
             CommitmentConfig::confirmed(),
         );
         
+        // Créer une copie du Keypair en utilisant ses bytes
+        let keypair_bytes = keypair.to_bytes();
+        let keypair_copy = Keypair::from_bytes(&keypair_bytes)
+            .expect("Failed to create keypair from bytes");
+        
         Self {
-            rpc_client,
-            keypair,
+            rpc_client: Arc::new(rpc_client),
+            keypair: Arc::new(keypair_copy),
         }
     }
     
@@ -186,7 +201,7 @@ mod tests {
         let keypair = Keypair::new();
         let interaction = SolanaInteraction::new(
             "https://api.mainnet-beta.solana.com",
-            keypair
+            &keypair
         );
         assert_eq!(interaction.rpc_client.commitment, CommitmentConfig::confirmed());
     }

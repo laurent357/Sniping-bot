@@ -6,14 +6,14 @@ use solana_sdk::{
     compute_budget::ComputeBudgetInstruction,
 };
 use std::{
-    error::Error,
     time::{Duration, Instant},
     sync::Arc,
+    str::FromStr,
 };
 use tokio::sync::Mutex;
 use log::{info, warn, error};
 use thiserror::Error;
-use anyhow::{Result, Error as AnyhowError};
+use anyhow::Result;
 
 #[derive(Error, Debug)]
 pub enum TransactionError {
@@ -57,6 +57,17 @@ impl Priority {
     }
 }
 
+impl std::fmt::Display for Priority {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Priority::Low => write!(f, "LOW"),
+            Priority::Medium => write!(f, "MEDIUM"),
+            Priority::High => write!(f, "HIGH"),
+            Priority::Critical => write!(f, "CRITICAL"),
+        }
+    }
+}
+
 pub struct TransactionConfig {
     pub priority: Priority,
     pub max_retries: u32,
@@ -77,62 +88,61 @@ impl Default for TransactionConfig {
     }
 }
 
+#[derive(Clone)]
 pub struct TransactionExecutor {
     solana: Arc<SolanaInteraction>,
     pending_transactions: Arc<Mutex<Vec<(Transaction, TransactionConfig)>>>,
 }
 
 impl TransactionExecutor {
-    pub fn new(solana: SolanaInteraction) -> Self {
-        Self {
-            solana: Arc::new(solana),
+    pub fn new(solana: Arc<SolanaInteraction>) -> Arc<Self> {
+        Arc::new(Self {
+            solana,
             pending_transactions: Arc::new(Mutex::new(Vec::new())),
-        }
+        })
     }
 
     pub async fn execute_transaction(
         &self,
-        mut instructions: Vec<Instruction>,
-        config: TransactionConfig,
-    ) -> Result<Signature, anyhow::Error> {
+        instructions: Vec<Instruction>,
+        priority: Priority,
+        max_retries: u32
+    ) -> Result<String, anyhow::Error> {
         let start_time = Instant::now();
         let mut retries = 0;
 
         // Ajoute les instructions de priorité
-        self.add_priority_instructions(&mut instructions, config.priority)?;
-
-        // Simule si nécessaire
-        if config.simulation_required {
-            self.solana.simulate_transaction(instructions.clone())?;
-        }
+        let mut final_instructions = instructions;
+        self.add_priority_instructions(&mut final_instructions, priority)
+            .map_err(|e| anyhow::anyhow!("Erreur lors de l'ajout des instructions de priorité: {}", e))?;
 
         let signers = vec![self.solana.get_keypair()];
         loop {
-            if start_time.elapsed() > config.timeout {
+            if start_time.elapsed() > Duration::from_secs(30) {
                 return Err(anyhow::anyhow!(TransactionError::Timeout));
             }
 
-            if retries >= config.max_retries {
+            if retries >= max_retries {
                 return Err(anyhow::anyhow!(TransactionError::MaxRetriesExceeded));
             }
 
-            match self.solana.send_transaction(instructions.clone(), signers.clone()).await {
+            match self.solana.send_transaction(final_instructions.clone(), signers.clone()).await {
                 Ok(signature) => {
                     info!(
                         "Transaction exécutée avec succès après {} retry(s): {}",
                         retries, signature
                     );
-                    return Ok(signature);
+                    return Ok(signature.to_string());
                 }
                 Err(e) => {
                     warn!(
                         "Échec de la transaction (retry {}/{}): {}",
                         retries + 1,
-                        config.max_retries,
+                        max_retries,
                         e
                     );
                     retries += 1;
-                    tokio::time::sleep(config.retry_delay).await;
+                    tokio::time::sleep(Duration::from_millis(500)).await;
                 }
             }
         }
@@ -161,27 +171,27 @@ impl TransactionExecutor {
     pub async fn execute_batch(
         &self,
         transactions: Vec<(Vec<Instruction>, TransactionConfig)>,
-    ) -> Vec<Result<Signature, Box<dyn Error>>> {
+    ) -> Vec<Result<Signature, anyhow::Error>> {
         let mut handles = Vec::new();
 
         for (instructions, config) in transactions {
             let executor = self.clone();
             let handle = tokio::spawn(async move {
-                executor.execute_transaction(instructions, config).await
+                let mut tx_instructions = instructions.clone();
+                executor.add_priority_instructions(&mut tx_instructions, config.priority)?;
+                if config.simulation_required {
+                    executor.solana.simulate_transaction(tx_instructions.clone())?;
+                }
+                executor.solana.send_transaction(tx_instructions, vec![executor.solana.get_keypair()]).await
             });
             handles.push(handle);
         }
 
+        // Attend la fin de toutes les transactions
         let mut results = Vec::new();
         for handle in handles {
-            match handle.await {
-                Ok(result) => results.push(result),
-                Err(e) => results.push(Err(Box::new(TransactionError::TransactionFailed(
-                    e.to_string(),
-                )))),
-            }
+            results.push(handle.await.unwrap_or_else(|e| Err(anyhow::anyhow!(e))));
         }
-
         results
     }
 
@@ -221,16 +231,24 @@ impl TransactionExecutor {
         }
     }
 
-    pub async fn execute_with_retry(&self, instructions: Vec<Instruction>, config: TransactionConfig) -> Result<Signature, anyhow::Error> {
-        let executor = self.clone();
+    pub async fn execute_with_retry(
+        self: Arc<Self>,
+        instructions: Vec<Instruction>,
+        config: TransactionConfig
+    ) -> Result<Signature, anyhow::Error> {
         let handle = tokio::spawn(async move {
-            executor.execute_transaction(instructions, config).await
+            let result = self.execute_transaction(instructions, config.priority, config.max_retries).await?;
+            Signature::from_str(&result)
+                .map_err(|e| anyhow::anyhow!("Impossible de parser la signature: {}", e))
         });
 
-        match handle.await {
-            Ok(result) => result,
-            Err(e) => Err(anyhow::anyhow!("Task panicked: {}", e))
-        }
+        // Gestion des erreurs en deux étapes :
+        // 1. Gestion de l'erreur de JoinError
+        // 2. Gestion de l'erreur de conversion de signature
+        handle
+            .await
+            .map_err(|e| anyhow::anyhow!("La tâche a paniqué: {}", e))?
+            .map_err(|e| anyhow::anyhow!("Erreur lors de l'exécution de la transaction: {}", e))
     }
 }
 

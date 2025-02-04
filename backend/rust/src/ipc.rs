@@ -1,16 +1,15 @@
 use serde::{Serialize, Deserialize};
 use tokio::{
     net::{UnixListener, UnixStream},
-    sync::mpsc::{channel, Sender, Receiver},
     io::{AsyncReadExt, AsyncWriteExt},
 };
 use std::{
     error::Error,
     path::PathBuf,
-    sync::Arc,
 };
-use log::{info, warn, error};
+use log::{info, error};
 use thiserror::Error;
+use tokio::sync::mpsc;
 
 #[derive(Error, Debug)]
 pub enum IPCError {
@@ -26,12 +25,12 @@ pub enum IPCError {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum IPCMessage {
-    TransactionRequest {
+    ExecuteTransaction {
         instructions: Vec<u8>,
-        priority: String,
-        max_retries: u32,
+        priority: u8,
     },
-    TransactionResponse {
+    TransactionResult {
+        success: bool,
         signature: Option<String>,
         error: Option<String>,
     },
@@ -47,17 +46,17 @@ pub enum IPCMessage {
 
 pub struct IPCServer {
     socket_path: PathBuf,
-    message_sender: Sender<IPCMessage>,
-    message_receiver: Receiver<IPCMessage>,
+    tx: mpsc::Sender<IPCMessage>,
+    rx: mpsc::Receiver<IPCMessage>,
 }
 
 impl IPCServer {
     pub fn new(socket_path: PathBuf) -> Self {
-        let (tx, rx) = channel(100);
+        let (tx, rx) = mpsc::channel(100);
         Self {
             socket_path,
-            message_sender: tx,
-            message_receiver: rx,
+            tx,
+            rx,
         }
     }
 
@@ -73,7 +72,7 @@ impl IPCServer {
         loop {
             match listener.accept().await {
                 Ok((stream, _)) => {
-                    let sender = self.message_sender.clone();
+                    let sender = self.tx.clone();
                     tokio::spawn(async move {
                         if let Err(e) = Self::handle_connection(stream, sender).await {
                             error!("Erreur de gestion de connexion: {}", e);
@@ -89,7 +88,7 @@ impl IPCServer {
 
     async fn handle_connection(
         mut stream: UnixStream,
-        sender: Sender<IPCMessage>,
+        sender: mpsc::Sender<IPCMessage>,
     ) -> Result<(), Box<dyn Error>> {
         let mut buffer = Vec::new();
         stream.read_to_end(&mut buffer).await?;
@@ -108,10 +107,26 @@ impl IPCServer {
     }
 
     pub async fn receive_message(&mut self) -> Result<IPCMessage, Box<dyn Error>> {
-        self.message_receiver
-            .recv()
-            .await
-            .ok_or_else(|| Box::new(IPCError::ChannelClosed) as Box<dyn Error>)
+        self.rx.recv().await.ok_or_else(|| Box::new(IPCError::ChannelClosed) as Box<dyn Error>)
+    }
+
+    pub async fn send(&self, message: IPCMessage) -> Result<(), mpsc::error::SendError<IPCMessage>> {
+        self.tx.send(message).await
+    }
+
+    pub async fn receive(&mut self) -> Option<IPCMessage> {
+        self.rx.recv().await
+    }
+}
+
+impl Clone for IPCServer {
+    fn clone(&self) -> Self {
+        let (tx, rx) = mpsc::channel(100);
+        Self {
+            socket_path: self.socket_path.clone(),
+            tx,
+            rx,
+        }
     }
 }
 
