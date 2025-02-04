@@ -26,8 +26,8 @@ services:
   # Backend Python
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: ./backend/python
+      dockerfile: ../Dockerfile
     environment:
       - FLASK_ENV=production
       - POSTGRES_HOST=db
@@ -39,6 +39,8 @@ services:
       - redis
       - rust
       - ollama
+    volumes:
+      - ./backend/python:/usr/src/app
     networks:
       - backend-network
     restart: unless-stopped
