@@ -1,0 +1,9 @@
+filebeat.inputs:
+- type: container
+  paths:
+    - '/var/lib/docker/containers/*/*.log'
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+logging.level: info
