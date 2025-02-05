@@ -1,13 +1,13 @@
 # Build stage
-FROM node:18-alpine as build
+FROM node:18 as build
 
 WORKDIR /app
 
-# Installation des dépendances
+# Copie des fichiers de dépendances
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Copie des sources
+# Copie du code source
 COPY . .
 
 # Build de l'application
@@ -17,16 +17,13 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copie de la configuration nginx
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Copie des fichiers de build
+# Copie des fichiers statiques buildés
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Configuration des variables d'environnement
-ENV NODE_ENV=production
+# Note: On ne copie plus les fichiers statiques individuellement car ils sont déjà inclus dans le build
 
-# Exposition du port
-EXPOSE 80
+EXPOSE 80 443
 
-# Commande de démarrage
 CMD ["nginx", "-g", "daemon off;"] 

@@ -18,23 +18,31 @@ FROM python:3.9-slim
 
 WORKDIR /usr/src/app
 
+# Installation des dépendances système nécessaires
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copie des dépendances depuis le build stage
 COPY --from=builder /root/.local /root/.local
 ENV PATH=/root/.local/bin:$PATH
 
 # Copie du code source
-COPY . .
+COPY . /usr/src/app/
 
 # Configuration des variables d'environnement
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV FLASK_ENV=production
+ENV PYTHONPATH=/usr/src/app/src
 
 # Installation de gunicorn
-RUN pip install --user gunicorn
+RUN pip install --user gunicorn flask flask-cors
 
 # Exposition du port
 EXPOSE 5000
 
 # Commande de démarrage avec gunicorn
-CMD ["gunicorn", "--config", "gunicorn.conf.py", "src.main:app"] 
+CMD ["gunicorn", "src.main:app", "--bind", "0.0.0.0:5000", "--reload"] 

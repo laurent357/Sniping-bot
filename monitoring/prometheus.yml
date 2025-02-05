@@ -14,25 +14,17 @@ rule_files:
 
 scrape_configs:
   # Application metrics
-  - job_name: 'trading-bot-backend'
-    metrics_path: '/metrics'
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'backend'
     static_configs:
       - targets: ['backend:5000']
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: '(.*)'
-        replacement: 'backend-$1'
 
-  - job_name: 'trading-bot-rust'
-    metrics_path: '/metrics'
+  - job_name: 'rust'
     static_configs:
       - targets: ['rust:50051']
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: instance
-        regex: '(.*)'
-        replacement: 'rust-$1'
 
   # Node metrics
   - job_name: 'node'

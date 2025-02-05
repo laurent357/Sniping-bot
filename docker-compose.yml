@@ -33,16 +33,22 @@ services:
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - RUST_SERVICE_URL=rust:50051
-      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_URL=http://host.docker.internal:11434
+    ports:
+      - "5005:5000"
     depends_on:
-      - db
-      - redis
-      - rust
-      - ollama
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rust:
+        condition: service_started
     volumes:
       - ./backend/python:/usr/src/app
     networks:
       - backend-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
@@ -103,20 +109,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Service Ollama
-  ollama:
-    image: ollama/ollama
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - backend-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
   # Monitoring
   prometheus:
     image: prom/prometheus
@@ -130,7 +122,7 @@ services:
   grafana:
     image: grafana/grafana
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
       - grafana_data:/var/lib/grafana
