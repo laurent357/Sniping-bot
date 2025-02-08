@@ -129,3 +129,37 @@ storybook-static/
 *.orig
 .env.*
 !.env.example
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Wallet files
+wallet/
+**/wallet/
+*.keypair
+*.json
+
+# Node
+node_modules/
+build/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Docker
+.docker/
+docker-compose.override.yml

@@ -74,15 +74,18 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
   const renderStatus = (trade: Transaction) => {
     // Utilisation d'une assertion de type avec vérification de sécurité
     const defaultStatus: TransactionStatus = 'completed';
-    const currentStatus = (trade.status && trade.status in statusMap) ? trade.status as TransactionStatus : defaultStatus;
+    const currentStatus =
+      trade.status && trade.status in statusMap
+        ? (trade.status as TransactionStatus)
+        : defaultStatus;
     const status = statusMap[currentStatus];
-    
+
     return (
-      <Chip 
-        label={status.label} 
-        color={status.color as 'success' | 'warning' | 'error'} 
-        size="small" 
-        variant="outlined" 
+      <Chip
+        label={status.label}
+        color={status.color as 'success' | 'warning' | 'error'}
+        size="small"
+        variant="outlined"
       />
     );
   };
@@ -96,16 +99,17 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
       const queryParams = new URLSearchParams({
         page: String(page + 1),
         pageSize: String(rowsPerPage),
-        ...(filters && Object.fromEntries(
-          Object.entries(filters)
-            .filter(([_, value]) => value !== undefined && value !== 'all') // Remove undefined and 'all' values
-            .map(([key, value]) => [key, String(value)]) // Convert values to strings
-        )),
+        ...(filters &&
+          Object.fromEntries(
+            Object.entries(filters)
+              .filter(([_, value]) => value !== undefined && value !== 'all') // Remove undefined and 'all' values
+              .map(([key, value]) => [key, String(value)]) // Convert values to strings
+          )),
       });
 
       const response = await fetch(`/api/v1/transactions/history?${queryParams}`);
       const result: PaginatedTransactions = await response.json();
-      
+
       setTransactions(result.items);
       setTotalTransactions(result.total);
     } catch (error) {
@@ -132,7 +136,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
           </TableRow>
         </TableHead>
         <TableBody>
-          {transactions.slice(0, maxItems).map((tx) => (
+          {transactions.slice(0, maxItems).map(tx => (
             <TableRow key={tx.id}>
               <TableCell>{new Date(tx.timestamp).toLocaleString()}</TableCell>
               <TableCell>{renderTradeSide(tx)}</TableCell>
@@ -156,4 +160,4 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({ maxItems
       </Table>
     </TableContainer>
   );
-}; 
+};

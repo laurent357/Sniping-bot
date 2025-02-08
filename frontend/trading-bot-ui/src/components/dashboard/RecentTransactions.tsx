@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Paper,
   Typography,
@@ -7,86 +8,116 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Box,
   Chip,
+  Link,
 } from '@mui/material';
-import { Transaction } from '../../types/dashboard';
+import { Transaction } from '../../services/api';
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
 }
 
-export const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' }).format(value);
+const StatusChip: React.FC<{ status: string }> = ({ status }) => {
+  let color: 'success' | 'warning' | 'error' | 'default' | 'primary' | 'secondary' | 'info' =
+    'default';
+  let label = status;
 
-  const formatDate = (timestamp: string) =>
-    new Date(timestamp).toLocaleDateString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  switch (status.toLowerCase()) {
+    case 'completed':
+      color = 'success';
+      label = 'Complété';
+      break;
+    case 'pending':
+      color = 'warning';
+      label = 'En cours';
+      break;
+    case 'failed':
+      color = 'error';
+      label = 'Échoué';
+      break;
+    case 'cancelled':
+      color = 'default';
+      label = 'Annulé';
+      break;
+  }
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'failed':
-        return 'error';
-      default:
-        return 'default';
-    }
+  return <Chip label={label} color={color} size="small" />;
+};
+
+export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ transactions }) => {
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
-  const getTypeColor = (type: 'buy' | 'sell') => {
-    return type === 'buy' ? 'primary' : 'secondary';
+  const formatDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString('fr-FR', {
+      dateStyle: 'short',
+      timeStyle: 'medium',
+    });
+  };
+
+  const getExplorerUrl = (hash: string) => {
+    return `https://solscan.io/tx/${hash}`;
   };
 
   return (
-    <Paper sx={{ p: 3 }}>
-      <Typography variant="h6" gutterBottom>
-        Transactions Récentes
-      </Typography>
+    <Paper sx={{ p: 2 }}>
+      <Box mb={2}>
+        <Typography variant="h6" component="div">
+          Transactions Récentes
+        </Typography>
+      </Box>
       <TableContainer>
         <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>Date</TableCell>
-              <TableCell>Type</TableCell>
               <TableCell>Token</TableCell>
-              <TableCell align="right">Montant</TableCell>
               <TableCell align="right">Prix</TableCell>
-              <TableCell>Statut</TableCell>
-              <TableCell>Hash</TableCell>
+              <TableCell align="right">Montant</TableCell>
+              <TableCell align="right">Total</TableCell>
+              <TableCell align="center">Type</TableCell>
+              <TableCell align="center">Statut</TableCell>
+              <TableCell align="right">Hash</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {transactions.map(transaction => (
-              <TableRow key={transaction.id}>
-                <TableCell>{formatDate(transaction.timestamp)}</TableCell>
-                <TableCell>
+            {transactions.map(tx => (
+              <TableRow key={tx.hash}>
+                <TableCell>{formatDate(tx.timestamp)}</TableCell>
+                <TableCell>{tx.token_symbol}</TableCell>
+                <TableCell align="right">{formatCurrency(tx.price)}</TableCell>
+                <TableCell align="right">{tx.amount.toFixed(6)}</TableCell>
+                <TableCell align="right">{formatCurrency(tx.total)}</TableCell>
+                <TableCell align="center">
                   <Chip
-                    label={transaction.type.toUpperCase()}
-                    color={getTypeColor(transaction.type)}
+                    label={tx.type === 'buy' ? 'Achat' : 'Vente'}
+                    color={tx.type === 'buy' ? 'success' : 'error'}
                     size="small"
                   />
                 </TableCell>
-                <TableCell>{transaction.tokenSymbol}</TableCell>
-                <TableCell align="right">{transaction.amount}</TableCell>
-                <TableCell align="right">{formatCurrency(transaction.price)}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={transaction.status}
-                    color={getStatusColor(transaction.status) as any}
-                    size="small"
-                  />
+                <TableCell align="center">
+                  <StatusChip status={tx.status} />
                 </TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                    {`${transaction.hash.substring(0, 6)}...${transaction.hash.substring(
-                      transaction.hash.length - 4
-                    )}`}
-                  </Typography>
+                <TableCell align="right">
+                  <Link
+                    href={getExplorerUrl(tx.hash)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      textDecoration: 'none',
+                      color: 'primary.main',
+                    }}
+                  >
+                    {tx.hash.slice(0, 8)}...
+                    {tx.hash.slice(-6)}
+                  </Link>
                 </TableCell>
               </TableRow>
             ))}

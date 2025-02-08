@@ -47,24 +47,24 @@ export const TradingForm: React.FC<TradingFormProps> = ({
   });
   const [error, setError] = useState<string | null>(null);
 
-  const handleSelectChange = (field: 'inputToken' | 'outputToken') => (event: SelectChangeEvent) => {
-    setValues(prev => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
-  };
-
-  const handleNumberChange = (field: 'amount' | 'slippage') => (
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = parseFloat(event.target.value);
-    if (!isNaN(value)) {
+  const handleSelectChange =
+    (field: 'inputToken' | 'outputToken') => (event: SelectChangeEvent) => {
       setValues(prev => ({
         ...prev,
-        [field]: value,
+        [field]: event.target.value,
       }));
-    }
-  };
+    };
+
+  const handleNumberChange =
+    (field: 'amount' | 'slippage') => (event: ChangeEvent<HTMLInputElement>) => {
+      const value = parseFloat(event.target.value);
+      if (!isNaN(value)) {
+        setValues(prev => ({
+          ...prev,
+          [field]: value,
+        }));
+      }
+    };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

@@ -2,7 +2,8 @@ import { useEffect, useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ws, NewTokenEvent, TradeUpdateEvent } from '../services/websocket';
 import { addNewToken, updateTrade } from '../store/tradingSlice';
-import { Token, Trade } from '../types/trading';
+import { Token } from '../services/api';
+import { Trade } from '../types/trading';
 
 interface WebSocketOptions<T> {
   type: string;
@@ -13,12 +14,13 @@ const mapNewTokenEventToToken = (event: NewTokenEvent): Token => ({
   address: event.address,
   symbol: event.symbol,
   name: event.name,
-  created_at: event.createdAt,
-  initial_price: event.initialPrice,
-  initial_liquidity: event.initialLiquidity,
-  pool_address: event.poolAddress,
+  price: event.initialPrice,
   liquidity_usd: event.liquidity_usd,
-  risk_score: event.risk_score
+  volume_24h: 0, // Valeur par défaut car non disponible dans l'événement
+  price_change_1h: 0, // Valeur par défaut car non disponible dans l'événement
+  estimated_profit: 0, // Valeur par défaut car non disponible dans l'événement
+  risk_level: event.risk_score >= 80 ? 'HIGH' : event.risk_score >= 50 ? 'MEDIUM' : 'LOW',
+  timestamp: event.createdAt,
 });
 
 const mapTradeUpdateEventToTrade = (event: TradeUpdateEvent): Trade => ({
@@ -31,12 +33,14 @@ const mapTradeUpdateEventToTrade = (event: TradeUpdateEvent): Trade => ({
   status: event.status,
   input_token: event.input_token,
   output_token: event.output_token,
-  amount: event.amount
+  amount: event.amount,
 });
 
 export const useWebSocket = <T>({ type, onMessage }: WebSocketOptions<T>) => {
   const dispatch = useDispatch();
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  const [connectionStatus, setConnectionStatus] = useState<
+    'connecting' | 'connected' | 'disconnected'
+  >('disconnected');
   const [error, setError] = useState<Error | null>(null);
 
   const handleNewToken = useCallback(

@@ -11,6 +11,7 @@ use std::{
     path::Path,
     collections::HashMap,
     sync::Arc,
+    fs,
 };
 use tokio::sync::RwLock;
 use log::{info, warn, error};
@@ -18,6 +19,8 @@ use thiserror::Error;
 use serde::{Serialize, Deserialize};
 use anyhow;
 use futures;
+use crate::config::{WalletConfig, WalletType};
+use bs58;
 
 #[derive(Error, Debug)]
 pub enum SecurityError {
@@ -220,6 +223,55 @@ impl SecurityManager {
     async fn check_trading_limits(&self, _amount: u64) -> bool {
         // Vérification des limites de trading
         true // À implémenter selon les règles de trading
+    }
+
+    /// Charge ou crée un wallet selon la configuration
+    pub async fn setup_wallet(&self, config: &WalletConfig) -> Result<Pubkey, Box<dyn Error>> {
+        match config.wallet_type {
+            WalletType::Phantom => {
+                let private_key = config.private_key.as_ref()
+                    .ok_or_else(|| SecurityError::InvalidKeypairFile)?;
+                
+                let bytes = bs58::decode(private_key)
+                    .into_vec()
+                    .map_err(|_| SecurityError::InvalidKeypairFile)?;
+                
+                let keypair = Keypair::from_bytes(&bytes)
+                    .map_err(|_| SecurityError::InvalidKeypairFile)?;
+                
+                let pubkey = keypair.pubkey();
+                self.keypairs.write().await.insert(pubkey, keypair);
+                
+                info!("Wallet Phantom chargé: {}", pubkey);
+                Ok(pubkey)
+            },
+            WalletType::Dedicated => {
+                if let Some(path) = &config.keypair_path {
+                    if path.exists() {
+                        // Charge le wallet existant
+                        self.load_keypair_from_file(path).await
+                    } else {
+                        // Crée un nouveau wallet
+                        let keypair = Keypair::new();
+                        let pubkey = keypair.pubkey();
+                        
+                        // Crée le dossier parent si nécessaire
+                        if let Some(parent) = path.parent() {
+                            fs::create_dir_all(parent)?;
+                        }
+                        
+                        // Sauvegarde le keypair
+                        self.keypairs.write().await.insert(pubkey, keypair);
+                        self.save_keypair_to_file(&pubkey, path).await?;
+                        
+                        info!("Nouveau wallet dédié créé: {}", pubkey);
+                        Ok(pubkey)
+                    }
+                } else {
+                    Err(Box::new(SecurityError::InvalidKeypairFile))
+                }
+            }
+        }
     }
 }
 

@@ -5,6 +5,8 @@ use solana_sniping_bot::{
     SecurityManager,
     ipc::{IPCServer, IPCMessage},
     transaction_execution::Priority,
+    WalletConfig,
+    WalletType,
 };
 use solana_sdk::{
     signature::Keypair,
@@ -15,6 +17,8 @@ use std::{error::Error, path::PathBuf, sync::Arc};
 use log::{info, error};
 use tokio::sync::mpsc;
 use bincode;
+use tokio::net::TcpListener;
+use tokio::io::AsyncWriteExt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -22,22 +26,39 @@ async fn main() -> Result<(), Box<dyn Error>> {
     init_logging()?;
     info!("Démarrage du module Solana...");
     
+    // Démarre le serveur de santé HTTP en arrière-plan
+    tokio::spawn(run_health_server());
+    
     // Configuration depuis les variables d'environnement
     let rpc_url = std::env::var("SOLANA_RPC_URL")
         .unwrap_or_else(|_| "https://api.mainnet-beta.solana.com".to_string());
         
-    // Crée un nouveau keypair pour les tests
-    // TODO: Charger depuis un fichier sécurisé
-    let keypair = Keypair::new();
-    info!("Pubkey: {}", keypair.pubkey());
+    // Configuration du wallet
+    let wallet_type = match std::env::var("WALLET_TYPE").as_deref() {
+        Ok("phantom") => WalletType::Phantom,
+        _ => WalletType::Dedicated,
+    };
+    
+    let config = WalletConfig {
+        wallet_type,
+        keypair_path: Some(PathBuf::from("wallet/keypair.json")),
+        private_key: std::env::var("PHANTOM_PRIVATE_KEY").ok(),
+    };
     
     // Initialise les composants
+    let security = SecurityManager::new();
+    let pubkey = security.setup_wallet(&config).await?;
+    info!("Wallet configuré avec pubkey: {}", pubkey);
+    
+    // Récupère le keypair pour l'interaction Solana
+    let keypair = security.get_keypair(&pubkey).await
+        .expect("Failed to get keypair");
+    
     let solana = Arc::new(SolanaInteraction::new(&rpc_url, &keypair));
     let executor = TransactionExecutor::new(Arc::clone(&solana));
-    let security = SecurityManager::new();
     
-    // Vérifie la connexion
-    match solana.get_balance(&keypair.pubkey()) {
+    // Vérifie la connexion et le solde
+    match solana.get_balance(&pubkey) {
         Ok(balance) => {
             info!("Connexion établie. Balance: {} SOL", balance as f64 / 1e9);
         }
@@ -127,6 +148,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     
     Ok(())
+}
+
+async fn run_health_server() {
+    let addr = "0.0.0.0:8080";
+    let listener = TcpListener::bind(addr).await.unwrap();
+    info!("Serveur de santé démarré sur {}", addr);
+
+    while let Ok((mut socket, _)) = listener.accept().await {
+        tokio::spawn(async move {
+            let response = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK";
+            if let Err(e) = socket.write_all(response.as_bytes()).await {
+                error!("Erreur d'écriture sur le socket de santé: {}", e);
+            }
+        });
+    }
 }
 
 #[cfg(test)]

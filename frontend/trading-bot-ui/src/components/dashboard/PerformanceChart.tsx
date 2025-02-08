@@ -1,65 +1,85 @@
+import React from 'react';
 import { Paper, Typography, Box } from '@mui/material';
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { PerformanceData } from '../../types/dashboard';
+
+interface PerformanceData {
+  timestamp: string;
+  profit: number;
+}
 
 interface PerformanceChartProps {
   data: PerformanceData[];
   title: string;
 }
 
-export const PerformanceChart = ({ data, title }: PerformanceChartProps) => {
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'USD' }).format(value);
+const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <Paper sx={{ p: 1 }}>
+        <Typography variant="body2">{label}</Typography>
+        <Typography variant="body2" color="success.main">
+          Profit:{' '}
+          {new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: 'USD',
+          }).format(payload[0].value)}
+        </Typography>
+      </Paper>
+    );
+  }
+  return null;
+};
 
-  const formatDate = (timestamp: string) => {
-    return new Date(timestamp).toLocaleDateString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
+export const PerformanceChart: React.FC<PerformanceChartProps> = ({ data, title }) => {
   return (
-    <Paper sx={{ p: 3, height: 400 }}>
-      <Typography variant="h6" gutterBottom>
-        {title}
-      </Typography>
-      <Box sx={{ width: '100%', height: 350 }}>
+    <Paper sx={{ p: 2 }}>
+      <Box mb={2}>
+        <Typography variant="h6" component="div">
+          {title}
+        </Typography>
+      </Box>
+      <Box sx={{ width: '100%', height: 300 }}>
         <ResponsiveContainer>
-          <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#2196f3" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#2196f3" stopOpacity={0} />
-              </linearGradient>
-            </defs>
+          <LineChart
+            data={data}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="timestamp"
-              tickFormatter={formatDate}
+            <XAxis dataKey="timestamp" tick={{ fontSize: 12 }} />
+            <YAxis
               tick={{ fontSize: 12 }}
-              interval="preserveStartEnd"
+              tickFormatter={value =>
+                new Intl.NumberFormat('fr-FR', {
+                  style: 'currency',
+                  currency: 'USD',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }).format(value)
+              }
             />
-            <YAxis tickFormatter={formatCurrency} tick={{ fontSize: 12 }} width={80} />
-            <Tooltip
-              formatter={(value: number) => [formatCurrency(value), 'Valeur']}
-              labelFormatter={formatDate}
-            />
-            <Area
+            <Tooltip content={<CustomTooltip />} />
+            <Line
               type="monotone"
-              dataKey="value"
-              stroke="#2196f3"
-              fillOpacity={1}
-              fill="url(#colorValue)"
+              dataKey="profit"
+              stroke="#4caf50"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 8 }}
             />
-          </AreaChart>
+          </LineChart>
         </ResponsiveContainer>
       </Box>
     </Paper>

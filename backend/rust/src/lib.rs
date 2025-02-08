@@ -2,6 +2,8 @@ pub mod solana_interaction;
 pub mod transaction_execution;
 pub mod security;
 pub mod ipc;
+pub mod config;
+pub mod sniping_executor;
 
 use log::LevelFilter;
 use std::error::Error;
@@ -20,6 +22,8 @@ pub use solana_interaction::SolanaInteraction;
 pub use transaction_execution::TransactionExecutor;
 pub use security::SecurityManager;
 pub use ipc::{IPCServer, IPCMessage};
+pub use config::{WalletConfig, WalletType};
+pub use sniping_executor::{SnipingExecutor, SnipingConfig, SnipingError};
 
 // Re-export des types Solana couramment utilisés
 pub use solana_sdk::{

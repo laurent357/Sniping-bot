@@ -155,4 +155,70 @@ mod tests {
         let decrypted = decrypt_private_key(&encrypted.unwrap(), "wrong_password");
         assert!(decrypted.is_err());
     }
+
+    #[tokio::test]
+    async fn test_phantom_wallet_setup() {
+        let security = SecurityManager::new();
+        let keypair = Keypair::new();
+        let private_key = bs58::encode(keypair.to_bytes()).into_string();
+        
+        let config = WalletConfig {
+            wallet_type: WalletType::Phantom,
+            keypair_path: None,
+            private_key: Some(private_key),
+        };
+        
+        let result = security.setup_wallet(&config).await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), keypair.pubkey());
+    }
+
+    #[tokio::test]
+    async fn test_dedicated_wallet_setup() {
+        let security = SecurityManager::new();
+        let temp_dir = tempdir().unwrap();
+        let keypair_path = temp_dir.path().join("wallet.json");
+        
+        let config = WalletConfig {
+            wallet_type: WalletType::Dedicated,
+            keypair_path: Some(keypair_path.clone()),
+            private_key: None,
+        };
+        
+        // Test création nouveau wallet
+        let result = security.setup_wallet(&config).await;
+        assert!(result.is_ok());
+        let pubkey = result.unwrap();
+        
+        // Vérifie que le fichier existe
+        assert!(keypair_path.exists());
+        
+        // Test chargement wallet existant
+        let result2 = security.setup_wallet(&config).await;
+        assert!(result2.is_ok());
+        assert_eq!(result2.unwrap(), pubkey);
+    }
+
+    #[tokio::test]
+    async fn test_invalid_wallet_config() {
+        let security = SecurityManager::new();
+        
+        // Test Phantom sans clé privée
+        let config = WalletConfig {
+            wallet_type: WalletType::Phantom,
+            keypair_path: None,
+            private_key: None,
+        };
+        let result = security.setup_wallet(&config).await;
+        assert!(result.is_err());
+        
+        // Test Dedicated sans chemin
+        let config = WalletConfig {
+            wallet_type: WalletType::Dedicated,
+            keypair_path: None,
+            private_key: None,
+        };
+        let result = security.setup_wallet(&config).await;
+        assert!(result.is_err());
+    }
 } 

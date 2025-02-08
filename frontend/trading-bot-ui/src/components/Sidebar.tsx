@@ -38,7 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
       }}
     >
       <List>
-        {menuItems.map((item) => (
+        {menuItems.map(item => (
           <ListItem button key={item.text}>
             <ListItemIcon>{item.icon}</ListItemIcon>
             <ListItemText primary={item.text} />
@@ -47,4 +47,4 @@ export const Sidebar: React.FC<SidebarProps> = () => {
       </List>
     </Drawer>
   );
-}; 
+};

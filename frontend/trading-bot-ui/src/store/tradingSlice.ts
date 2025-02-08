@@ -1,6 +1,20 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { api } from '../services/api';
-import { Token, Trade, Pool } from '../services/api';
+import { Token, Pool } from '../services/api';
+import { Trade } from '../types/trading';
+
+const mapTransactionToTrade = (tx: any): Trade => ({
+  id: tx.hash,
+  execution_price: tx.price,
+  size: tx.amount,
+  side: tx.type,
+  timestamp: tx.timestamp,
+  tokenPair: tx.token_symbol,
+  status: tx.status === 'cancelled' ? 'failed' : tx.status,
+  input_token: '', // Ces informations ne sont pas disponibles dans Transaction
+  output_token: tx.token_symbol,
+  amount: tx.amount
+});
 
 interface TradingState {
   tokens: Token[];
@@ -23,38 +37,30 @@ const initialState: TradingState = {
 // Thunks
 export const fetchNewTokens = createAsyncThunk(
   'trading/fetchNewTokens',
-  async (params: { min_liquidity?: number; time_range?: '1h' | '24h' | '7d' }) => {
+  async (params: { min_profit?: number }) => {
     return await api.getNewTokens(params);
   }
 );
 
-export const fetchActivePools = createAsyncThunk(
-  'trading/fetchActivePools',
-  async (params: { dex?: string; min_volume?: number }) => {
-    return await api.getActivePools(params);
+export const fetchPoolInfo = createAsyncThunk(
+  'trading/fetchPoolInfo',
+  async (poolId: string) => {
+    return await api.getPoolInfo(poolId);
   }
 );
 
-export const fetchTradeHistory = createAsyncThunk(
-  'trading/fetchTradeHistory',
-  async (params?: {
-    start_date?: string;
-    end_date?: string;
-    status?: 'completed' | 'pending' | 'failed';
-  }) => {
-    return await api.getTradeHistory(params);
+export const fetchTransactionHistory = createAsyncThunk(
+  'trading/fetchTransactionHistory',
+  async (params?: { limit?: number; status?: string }) => {
+    const transactions = await api.getTransactionHistory(params);
+    return transactions.map(mapTransactionToTrade);
   }
 );
 
-export const executeTrade = createAsyncThunk(
-  'trading/executeTrade',
-  async (params: {
-    input_token: string;
-    output_token: string;
-    amount: number;
-    slippage: number;
-  }) => {
-    return await api.executeTrade(params);
+export const executeTransaction = createAsyncThunk(
+  'trading/executeTransaction',
+  async (token: Token) => {
+    return await api.executeTransaction(token);
   }
 );
 
@@ -96,46 +102,46 @@ const tradingSlice = createSlice({
         state.error = action.error.message || 'Une erreur est survenue';
       });
 
-    // fetchActivePools
+    // fetchPoolInfo
     builder
-      .addCase(fetchActivePools.pending, state => {
+      .addCase(fetchPoolInfo.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchActivePools.fulfilled, (state, action) => {
+      .addCase(fetchPoolInfo.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.pools = action.payload;
+        state.pools = [action.payload];
       })
-      .addCase(fetchActivePools.rejected, (state, action) => {
+      .addCase(fetchPoolInfo.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || 'Une erreur est survenue';
       });
 
-    // fetchTradeHistory
+    // fetchTransactionHistory
     builder
-      .addCase(fetchTradeHistory.pending, state => {
+      .addCase(fetchTransactionHistory.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchTradeHistory.fulfilled, (state, action) => {
+      .addCase(fetchTransactionHistory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.trades = action.payload;
       })
-      .addCase(fetchTradeHistory.rejected, (state, action) => {
+      .addCase(fetchTransactionHistory.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || 'Une erreur est survenue';
       });
 
-    // executeTrade
+    // executeTransaction
     builder
-      .addCase(executeTrade.pending, state => {
+      .addCase(executeTransaction.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(executeTrade.fulfilled, state => {
+      .addCase(executeTransaction.fulfilled, state => {
         state.isLoading = false;
       })
-      .addCase(executeTrade.rejected, (state, action) => {
+      .addCase(executeTransaction.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || 'Une erreur est survenue';
       });

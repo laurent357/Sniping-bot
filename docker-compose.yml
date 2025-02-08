@@ -13,12 +13,14 @@ services:
       - backend
     volumes:
       - ./frontend/trading-bot-ui/nginx/ssl:/etc/nginx/ssl
+    env_file:
+      - .env
     networks:
       - frontend-network
       - backend-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost"]
+      test: ["CMD", "curl", "-f", "http://192.168.1.20"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -28,14 +30,29 @@ services:
     build:
       context: ./backend/python
       dockerfile: ../Dockerfile
+    env_file:
+      - .env
     environment:
       - FLASK_ENV=production
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
       - RUST_SERVICE_URL=rust:50051
-      - OLLAMA_URL=http://host.docker.internal:11434
+      - PYTHONPATH=/usr/src/app
+      - GEVENT_MONKEY=1
+      - REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+      - SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+      - PYTHONUNBUFFERED=1
+      - AIOHTTP_NO_EXTENSIONS=1
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    command: >
+      sh -c "apt-get update && apt-get install -y ca-certificates &&
+             pip install 'flask[async]' gevent aiohttp &&
+             python -c 'from gevent import monkey; monkey.patch_all(ssl=True, thread=False)' &&
+             gunicorn --worker-class gevent --workers 1 --threads 4 --timeout 300 --graceful-timeout 300 --keep-alive 65 --log-level debug src.app:app --bind 0.0.0.0:5000 --reload"
     ports:
-      - "5005:5000"
+      - "5000:5000"
     depends_on:
       db:
         condition: service_healthy
@@ -51,7 +68,7 @@ services:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://192.168.1.20:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -61,16 +78,21 @@ services:
     build:
       context: ./backend/rust
       dockerfile: Dockerfile
+    env_file:
+      - .env
     environment:
       - RUST_LOG=info
       - SOLANA_RPC_URL=${SOLANA_RPC_URL}
     volumes:
-      - ./solana-module/wallet:/app/wallet
+      - ./backend/rust/wallet:/app/wallet
+    ports:
+      - "50051:50051"
+      - "8080:8080"
     networks:
       - backend-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "grpc-health-probe", "-addr=:50051"]
+      test: ["CMD", "curl", "-f", "http://192.168.1.20:8080"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -78,6 +100,8 @@ services:
   # Base de données
   db:
     image: postgres:14-alpine
+    env_file:
+      - .env
     environment:
       - POSTGRES_DB=trading_bot
       - POSTGRES_USER=postgres

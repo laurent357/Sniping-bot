@@ -1,13 +1,14 @@
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/v1';
-export const WS_BASE_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:5000/ws';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://192.168.1.20:5000';
+export const WS_URL = process.env.REACT_APP_WS_URL || 'ws://192.168.1.20:5000/ws';
+export const REFRESH_INTERVAL = 30000; // 30 secondes
 
 export const API_ENDPOINTS = {
-  NEW_TOKENS: '/tokens/new',
-  FILTERS_CONFIG: '/filters/config',
-  TRANSACTIONS_HISTORY: '/transactions/history',
-  JUPITER_STATS: '/stats/jupiter',
-  EXECUTE_TRANSACTION: '/transactions/execute',
-  SECURITY_CHECK: '/security/check',
+  NEW_TOKENS: '/api/v1/tokens/new',
+  FILTERS_CONFIG: '/api/v1/filters/config',
+  TRANSACTIONS_HISTORY: '/api/v1/transactions/history',
+  JUPITER_STATS: '/api/v1/stats/jupiter',
+  EXECUTE_TRANSACTION: '/api/v1/transactions/execute',
+  SECURITY_CHECK: '/api/v1/security/check',
 };
 
 export const WS_EVENTS = {
@@ -22,5 +23,7 @@ export const API_CONFIG = {
   retries: 3,
   headers: {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
   },
+  baseURL: process.env.REACT_APP_API_URL || 'http://192.168.1.20:5000'
 };

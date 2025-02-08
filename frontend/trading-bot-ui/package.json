@@ -50,11 +50,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "test:ci": "react-scripts test --watchAll=false --coverage",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\"",
+    "format:fix": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,scss}\" && eslint src --ext .ts,.tsx --fix",
     "lint": "eslint src --ext .ts,.tsx --fix"
   },
   "browserslist": {

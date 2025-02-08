@@ -116,14 +116,31 @@ class WebSocketService extends EventEmitter {
   }
 
   private validateNewTokenEvent(data: any): data is NewTokenEvent {
-    const requiredFields = ['address', 'symbol', 'name', 'initialPrice', 'initialLiquidity', 
-                          'poolAddress', 'createdAt', 'liquidity_usd', 'risk_score'];
+    const requiredFields = [
+      'address',
+      'symbol',
+      'name',
+      'initialPrice',
+      'initialLiquidity',
+      'poolAddress',
+      'createdAt',
+      'liquidity_usd',
+      'risk_score',
+    ];
     return requiredFields.every(field => field in data);
   }
 
   private validateTradeUpdateEvent(data: any): data is TradeUpdateEvent {
-    const requiredFields = ['transaction_id', 'status', 'execution_price', 'timestamp', 
-                          'amount', 'trade_type', 'input_token', 'output_token'];
+    const requiredFields = [
+      'transaction_id',
+      'status',
+      'execution_price',
+      'timestamp',
+      'amount',
+      'trade_type',
+      'input_token',
+      'output_token',
+    ];
     return requiredFields.every(field => field in data);
   }
 
@@ -174,5 +191,5 @@ class WebSocketService extends EventEmitter {
 
 // Export une instance unique
 export const ws = new WebSocketService({
-  url: process.env.REACT_APP_WS_URL || 'ws://localhost:5000/ws',
+  url: process.env.REACT_APP_WS_URL || '/ws',
 });
